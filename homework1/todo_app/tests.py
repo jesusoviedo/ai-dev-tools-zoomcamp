@@ -26,9 +26,26 @@ class TodoModelTest(TestCase):
         todo = Todo.objects.create(title="No description")
         self.assertIsNone(todo.description)
 
+    def test_todo_dependencies(self):
+        """Test adding dependencies to a todo."""
+        todo1 = Todo.objects.create(title="Task 1")
+        todo2 = Todo.objects.create(title="Task 2")
+        todo2.dependencies.add(todo1)
+        self.assertIn(todo1, todo2.dependencies.all())
+        self.assertIn(todo2, todo1.blocking.all())
+
 class TodoViewTest(TestCase):
     def setUp(self):
         self.todo = Todo.objects.create(title="Test Task")
+
+    def test_dashboard_view(self):
+        """Test that dashboard returns 200 and contains stats."""
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'todo_app/dashboard.html')
+        self.assertIn('total_tasks', response.context)
+        self.assertIn('completed_tasks', response.context)
+        self.assertIn('pending_tasks', response.context)
 
     def test_list_view_normal(self):
         """Test that list view returns 200 and contains todos."""
@@ -42,7 +59,7 @@ class TodoViewTest(TestCase):
         Todo.objects.all().delete()
         response = self.client.get(reverse('todo-list'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "No tasks yet")
+        self.assertContains(response, "No tasks found")
 
     def test_create_view_normal(self):
         """Test creating a new todo via POST."""

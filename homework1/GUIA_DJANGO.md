@@ -69,6 +69,8 @@ Los **Modelos** definen la estructura de tu base de datos usando clases de Pytho
     class Todo(models.Model):
         title = models.CharField(max_length=200) # Texto corto
         is_resolved = models.BooleanField(default=False) # Verdadero/Falso
+        # Relación de muchos a muchos para dependencias
+        dependencies = models.ManyToManyField('self', symmetrical=False, blank=True)
     ```
 
 ### Aplicando los cambios (Migraciones)
@@ -93,6 +95,7 @@ Las **Vistas** deciden qué mostrar al usuario. Usamos "Vistas Basadas en Clases
     *   `CreateView`: Para mostrar un formulario de creación.
     *   `UpdateView`: Para editar.
     *   `DeleteView`: Para borrar.
+    *   `TemplateView`: Para páginas estáticas o dashboards personalizados.
 
 ## 6. Configurando las Rutas (URLs)
 
@@ -107,6 +110,7 @@ Los **Templates** son archivos HTML que muestran los datos al usuario.
 
 *   **Ubicación:** `todo_app/templates/todo_app/`
 *   **Herencia:** Usamos un `base.html` que contiene la estructura común (cabecera, pie de página, estilos CSS) y los otros templates "heredan" de él usando `{% extends 'todo_app/base.html' %}`.
+*   **Estilos:** Puedes usar frameworks CSS como Bootstrap para mejorar la apariencia rápidamente.
 
 ## 8. Pruebas Unitarias (Testing)
 
@@ -124,7 +128,15 @@ El comando mágico para correr todas tus pruebas:
 python manage.py test
 ```
 
-## 9. Ejecutar la Aplicación
+## 9. Características Avanzadas (Nuevo)
+
+Hemos añadido funcionalidades avanzadas a nuestra aplicación:
+
+*   **Dashboard:** Una vista personalizada que muestra estadísticas y gráficos.
+*   **Dependencias:** Las tareas pueden depender de otras tareas (relación ManyToMany).
+*   **Estilos Profesionales:** Uso de Bootstrap y CSS personalizado para una interfaz moderna.
+
+## 10. Ejecutar la Aplicación
 
 Finalmente, para ver tu obra maestra en el navegador:
 
@@ -200,6 +212,8 @@ INSTALLED_APPS = [
     class Todo(models.Model):
         title = models.CharField(max_length=200) # Short text
         is_resolved = models.BooleanField(default=False) # True/False
+        # Many-to-many relationship for dependencies
+        dependencies = models.ManyToManyField('self', symmetrical=False, blank=True)
     ```
 
 ### Applying changes (Migrations)
@@ -224,6 +238,7 @@ Every time you modify `models.py`, you must run these two commands to update the
     *   `CreateView`: To show a creation form.
     *   `UpdateView`: To edit.
     *   `DeleteView`: To delete.
+    *   `TemplateView`: For static pages or custom dashboards.
 
 ## 6. Configuring Routes (URLs)
 
@@ -238,6 +253,7 @@ URLs tell Django which view to execute when a user visits an address.
 
 *   **Location:** `todo_app/templates/todo_app/`
 *   **Inheritance:** We use a `base.html` that contains the common structure (header, footer, CSS styles) and other templates "inherit" from it using `{% extends 'todo_app/base.html' %}`.
+*   **Styling:** You can use CSS frameworks like Bootstrap to quickly improve the look and feel.
 
 ## 8. Unit Testing
 
@@ -255,7 +271,15 @@ The magic command to run all your tests:
 python manage.py test
 ```
 
-## 9. Running the Application
+## 9. Advanced Features (New)
+
+We have added advanced features to our application:
+
+*   **Dashboard:** A custom view showing statistics and charts.
+*   **Dependencies:** Tasks can depend on other tasks (ManyToMany relationship).
+*   **Professional Styling:** Using Bootstrap and custom CSS for a modern interface.
+
+## 10. Running the Application
 
 Finally, to see your masterpiece in the browser:
 

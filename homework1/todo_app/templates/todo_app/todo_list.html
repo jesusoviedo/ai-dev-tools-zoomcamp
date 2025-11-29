@@ -1,23 +1,86 @@
 {% extends 'todo_app/base.html' %}
 
 {% block content %}
-<a href="{% url 'todo-create' %}" class="btn btn-primary mb-3">Add New Task</a>
-<ul class="list-group">
-    {% for todo in todos %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span class="{% if todo.is_resolved %}text-decoration-line-through text-muted{% endif %}">
-            {{ todo.title }}
-            {% if todo.due_date %}
-            <small class="text-muted ms-2">Due: {{ todo.due_date|date:"Y-m-d H:i" }}</small>
-            {% endif %}
-        </span>
-        <div>
-            <a href="{% url 'todo-update' todo.pk %}" class="btn btn-sm btn-secondary">Edit</a>
-            <a href="{% url 'todo-delete' todo.pk %}" class="btn btn-sm btn-danger">Delete</a>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <h1 class="h2">All Tasks</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="?status=all"
+                class="btn btn-sm btn-outline-secondary {% if not request.GET.status or request.GET.status == 'all' %}active{% endif %}">All</a>
+            <a href="?status=pending"
+                class="btn btn-sm btn-outline-secondary {% if request.GET.status == 'pending' %}active{% endif %}">Pending</a>
+            <a href="?status=completed"
+                class="btn btn-sm btn-outline-secondary {% if request.GET.status == 'completed' %}active{% endif %}">Completed</a>
         </div>
-    </li>
-    {% empty %}
-    <li class="list-group-item">No tasks yet.</li>
-    {% endfor %}
-</ul>
+        <a href="{% url 'todo-create' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus"></i> New Task
+        </a>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Title</th>
+                        <th>Due Date</th>
+                        <th>Dependencies</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for todo in todos %}
+                    <tr>
+                        <td>
+                            {% if todo.is_resolved %}
+                            <span class="badge bg-success">Completed</span>
+                            {% else %}
+                            {% if todo.due_date and todo.due_date|date:"Y-m-d" < now|date:"Y-m-d" %} <span
+                                class="badge bg-danger">Overdue</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                                {% endif %}
+                                {% endif %}
+                        </td>
+                        <td>
+                            <span class="{% if todo.is_resolved %}text-decoration-line-through text-muted{% endif %}">
+                                {{ todo.title }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if todo.due_date %}
+                            {{ todo.due_date|date:"M d, Y H:i" }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% for dep in todo.dependencies.all %}
+                            <span class="badge bg-secondary">{{ dep.title }}</span>
+                            {% empty %}
+                            -
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <a href="{% url 'todo-update' todo.pk %}" class="btn btn-sm btn-info text-white">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'todo-delete' todo.pk %}" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No tasks found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

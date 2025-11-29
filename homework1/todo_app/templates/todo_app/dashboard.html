@@ -1,0 +1,150 @@
+{% extends 'todo_app/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+</div>
+
+<!-- Stats Cards -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Tasks</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_tasks }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-calendar bi-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completed</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ completed_tasks }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-check-circle bi-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_tasks }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-hourglass-split bi-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Charts -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Task Status Overview</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="myAreaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Lists -->
+    <div class="col-xl-4 col-lg-5">
+        <!-- Overdue Tasks -->
+        {% if overdue_tasks %}
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-danger">Overdue Tasks</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for task in overdue_tasks %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ task.title }}
+                        <span class="badge bg-danger rounded-pill">{{ task.due_date|date:"M d" }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Upcoming Tasks -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Upcoming Tasks</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for task in upcoming_tasks %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ task.title }}
+                        <span class="badge bg-info rounded-pill">{{ task.due_date|date:"M d" }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted">No upcoming tasks</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Chart.js implementation
+    var ctx = document.getElementById("myAreaChart");
+    var myPieChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ["Completed", "Pending"],
+            datasets: [{
+                data: [{{ completed_tasks }}, {{ pending_tasks }}],
+        backgroundColor: ['#1cc88a', '#f6c23e'],
+        hoverBackgroundColor: ['#17a673', '#dda20a'],
+        hoverBorderColor: "rgba(234, 236, 244, 1)",
+    }],
+        },
+    options: {
+        maintainAspectRatio: false,
+            tooltips: {
+            backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                        borderWidth: 1,
+                            xPadding: 15,
+                                yPadding: 15,
+                                    displayColors: false,
+                                        caretPadding: 10,
+            },
+        legend: {
+            display: true,
+                position: 'bottom'
+        },
+        cutoutPercentage: 80,
+        },
+    });
+</script>
+{% endblock %}
