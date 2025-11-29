@@ -1,0 +1,91 @@
+{% extends 'todo_app/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <h1 class="h2">{{ todo.title }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'todo-update' todo.pk %}" class="btn btn-sm btn-outline-secondary me-2">
+            <i class="bi bi-pencil"></i> {% trans "Edit" %}
+        </a>
+        <a href="{% url 'todo-delete' todo.pk %}" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-trash"></i> {% trans "Delete" %}
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans "Details" %}</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>{% trans "Description" %}:</strong> {{ todo.description|default:"-"|linebreaks }}</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>{% trans "Status" %}:</strong> <span class="badge bg-secondary">{{
+                                todo.get_status_display }}</span></p>
+                        <p><strong>{% trans "Due Date" %}:</strong> {{ todo.due_date|date:"M d, Y"|default:"-" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>{% trans "Assigned To" %}:</strong> {{ todo.assigned_to.username|default:"-" }}</p>
+                        <p><strong>{% trans "Created By" %}:</strong> {{ todo.created_by.username|default:"-" }}</p>
+                    </div>
+                </div>
+                {% if todo.dependencies.exists %}
+                <hr>
+                <p><strong>{% trans "Dependencies" %}:</strong></p>
+                <ul>
+                    {% for dep in todo.dependencies.all %}
+                    <li><a href="{% url 'todo-detail' dep.pk %}">{{ dep.title }}</a> ({{ dep.get_status_display }})</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans "Comments" %}</h6>
+            </div>
+            <div class="card-body">
+                {% for comment in comments %}
+                <div class="mb-3 pb-3 border-bottom">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ comment.user.username }}</strong>
+                        <small class="text-muted">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+                    </div>
+                    <p class="mb-1">{{ comment.text|linebreaksbr }}</p>
+                    {% if comment.attachment %}
+                    <a href="{{ comment.attachment.url }}" class="btn btn-sm btn-outline-info" target="_blank">
+                        <i class="bi bi-paperclip"></i> {% trans "Attachment" %}
+                    </a>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-muted">{% trans "No comments yet." %}</p>
+                {% endfor %}
+
+                <!-- Add Comment Form -->
+                <h5 class="mt-4">{% trans "Add a Comment" %}</h5>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ comment_form.text }}
+                    </div>
+                    <div class="mb-3">
+                        {{ comment_form.attachment }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">{% trans "Post Comment" %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Sidebar info or history could go here -->
+    </div>
+</div>
+{% endblock %}

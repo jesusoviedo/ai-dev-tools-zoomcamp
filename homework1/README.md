@@ -23,6 +23,18 @@ Esta tarea cubre los fundamentos del desarrollo asistido por IA creando una apli
 - Creación de Templates
 - Pruebas (Tests) asistidas por IA
 
+#### ✨ Características Avanzadas Implementadas
+- **Panel de Control (Dashboard):** Estadísticas y gráficos en tiempo real
+- **Internacionalización (i18n):** Soporte completo para Inglés y Español
+- **Gestión de Tareas:** Estados personalizados, dependencias y asignación de usuarios
+- **Auditoría Automática:** Registro de cambios mediante Django Signals
+- **Papelera (Soft Delete):** Eliminación lógica con posibilidad de recuperación
+- **Sistema de Notificaciones:** Notificaciones automáticas cuando te asignan tareas o se completan dependencias
+- **Comentarios y Adjuntos:** Sistema completo de comentarios con archivos adjuntos
+- **Gestión de Usuarios:** Panel admin para crear y gestionar usuarios (solo superusuarios)
+- **Módulo de Reportes:** Filtros avanzados y exportación a CSV
+- **Autenticación Completa:** Sistema de login/logout con templates modernos
+
 ### 🚀 Cómo ejecutar esta tarea
 
 #### Prerrequisitos
@@ -41,39 +53,60 @@ Esta tarea cubre los fundamentos del desarrollo asistido por IA creando una apli
    source .venv/bin/activate
    ```
 
-3. **Ejecutar las migraciones (si es necesario):**
+3. **Ejecutar las migraciones:**
    ```bash
    python manage.py migrate
    ```
 
-4. **Ejecutar el servidor de desarrollo:**
+4. **Crear usuario administrador:**
+   ```bash
+   python manage.py create_default_admin --username=admin --email=admin@example.com --password=TuPasswordSeguro123
+   ```
+
+5. **Ejecutar el servidor de desarrollo:**
    ```bash
    python manage.py runserver
    ```
 
-5. **Ejecutar los tests:**
+6. **Acceder a la aplicación:**
+   - Abrir navegador en: http://127.0.0.1:8000/
+   - Login con las credenciales que creaste en el paso 4
+
+7. **Ejecutar los tests (29 tests):**
    ```bash
-   python manage.py test
+   python manage.py test todo_app
    ```
 
 ### 📁 Estructura de archivos
 
 ```
 homework1/
-├── manage.py           # Script de gestión de Django
-├── todo_project/       # Configuración del proyecto
-├── todo_app/           # Aplicación TODO
-├── pyproject.toml      # Dependencias del proyecto
-├── .python-version     # Versión de Python requerida
-└── README.md           # Este archivo
+├── manage.py                  # Script de gestión de Django
+├── todo_project/              # Configuración del proyecto
+│   ├── settings.py           # Configuración (DB, i18n, auth)
+│   └── urls.py               # URLs principales
+├── todo_app/                  # Aplicación TODO
+│   ├── models.py             # Todo, AuditLog, Comment, Notification
+│   ├── views.py              # Vistas (Dashboard, User Management, Reports)
+│   ├── signals.py            # Audit logs automáticos
+│   ├── forms.py              # Formularios
+│   ├── templates/            # Templates HTML
+│   ├── management/commands/  # Comando create_default_admin
+│   └── tests.py              # 29 tests unitarios
+├── locale/                    # Traducciones (es/en)
+├── pyproject.toml            # Dependencias del proyecto
+├── .python-version           # Versión de Python requerida
+├── GUIA_DJANGO.md            # Guía completa (español/inglés)
+└── README.md                 # Este archivo
 ```
 
 ### 📝 Notas importantes
 
-- La aplicación es un gestor de tareas (TODO list) básico.
-- Todas las dependencias están definidas en `pyproject.toml`.
-- Esta tarea corresponde a la Semana 1 del curso.
-- Asegúrate de seguir los pasos de migración antes de iniciar el servidor.
+- La aplicación es un gestor de tareas enterprise completo
+- **29 tests unitarios** verifican todas las funcionalidades
+- Sistema de autenticación completo (debes crear usuario admin primero)
+- Interfaz moderna con Bootstrap 5
+- Todas las dependencias están en `pyproject.toml`
 
 ### 🔗 Enlaces relacionados
 
@@ -99,6 +132,18 @@ This assignment covers the fundamentals of AI-assisted development by creating a
 - Creating Templates
 - AI-assisted Testing
 
+#### ✨ Implemented Advanced Features
+- **Dashboard:** Real-time statistics and charts
+- **Internationalization (i18n):** Full support for English and Spanish
+- **Task Management:** Custom statuses, dependencies, and user assignment
+- **Automated Audit Logging:** Change tracking via Django Signals
+- **Soft Delete:** Logical deletion with recovery capability
+- **Notification System:** Automatic notifications when tasks are assigned or dependencies completed
+- **Comments & Attachments:** Complete comment system with file attachments
+- **User Management:** Admin panel to create and manage users (superusers only)
+- **Reports Module:** Advanced filters and CSV export
+- **Complete Authentication:** Login/logout system with modern templates
+
 ### 🚀 How to run this assignment
 
 #### Prerequisites
@@ -117,39 +162,60 @@ This assignment covers the fundamentals of AI-assisted development by creating a
    source .venv/bin/activate
    ```
 
-3. **Run migrations (if necessary):**
+3. **Run migrations:**
    ```bash
    python manage.py migrate
    ```
 
-4. **Run the development server:**
+4. **Create admin user:**
+   ```bash
+   python manage.py create_default_admin --username=admin --email=admin@example.com --password=YourSecurePassword123
+   ```
+
+5. **Run the development server:**
    ```bash
    python manage.py runserver
    ```
 
-5. **Run tests:**
+6. **Access the application:**
+   - Open browser at: http://127.0.0.1:8000/
+   - Login with credentials created in step 4
+
+7. **Run tests (29 tests):**
    ```bash
-   python manage.py test
+   python manage.py test todo_app
    ```
 
 ### 📁 File structure
 
 ```
 homework1/
-├── manage.py           # Django management script
-├── todo_project/       # Project configuration
-├── todo_app/           # TODO application
-├── pyproject.toml      # Project dependencies
-├── .python-version     # Required Python version
-└── README.md           # This file
+├── manage.py                  # Django management script
+├── todo_project/              # Project configuration
+│   ├── settings.py           # Configuration (DB, i18n, auth)
+│   └── urls.py               # Main URLs
+├── todo_app/                  # TODO application
+│   ├── models.py             # Todo, AuditLog, Comment, Notification
+│   ├── views.py              # Views (Dashboard, User Management, Reports)
+│   ├── signals.py            # Automatic audit logs
+│   ├── forms.py              # Forms
+│   ├── templates/            # HTML templates
+│   ├── management/commands/  # create_default_admin command
+│   └── tests.py              # 29 unit tests
+├── locale/                    # Translations (es/en)
+├── pyproject.toml            # Project dependencies
+├── .python-version           # Required Python version
+├── GUIA_DJANGO.md            # Complete guide (Spanish/English)
+└── README.md                 # This file
 ```
 
 ### 📝 Important notes
 
-- The application is a basic TODO list manager.
-- All dependencies are defined in `pyproject.toml`.
-- This assignment corresponds to Week 1 of the course.
-- Make sure to follow the migration steps before starting the server.
+- The application is a complete enterprise task manager
+- **29 unit tests** verify all functionalities
+- Complete authentication system (must create admin user first)
+- Modern interface with Bootstrap 5
+- All dependencies are in `pyproject.toml`
 
 ### 🔗 Related links
 

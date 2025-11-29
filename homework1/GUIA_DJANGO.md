@@ -69,8 +69,6 @@ Los **Modelos** definen la estructura de tu base de datos usando clases de Pytho
     class Todo(models.Model):
         title = models.CharField(max_length=200) # Texto corto
         is_resolved = models.BooleanField(default=False) # Verdadero/Falso
-        # Relación de muchos a muchos para dependencias
-        dependencies = models.ManyToManyField('self', symmetrical=False, blank=True)
     ```
 
 ### Aplicando los cambios (Migraciones)
@@ -95,7 +93,6 @@ Las **Vistas** deciden qué mostrar al usuario. Usamos "Vistas Basadas en Clases
     *   `CreateView`: Para mostrar un formulario de creación.
     *   `UpdateView`: Para editar.
     *   `DeleteView`: Para borrar.
-    *   `TemplateView`: Para páginas estáticas o dashboards personalizados.
 
 ## 6. Configurando las Rutas (URLs)
 
@@ -110,7 +107,6 @@ Los **Templates** son archivos HTML que muestran los datos al usuario.
 
 *   **Ubicación:** `todo_app/templates/todo_app/`
 *   **Herencia:** Usamos un `base.html` que contiene la estructura común (cabecera, pie de página, estilos CSS) y los otros templates "heredan" de él usando `{% extends 'todo_app/base.html' %}`.
-*   **Estilos:** Puedes usar frameworks CSS como Bootstrap para mejorar la apariencia rápidamente.
 
 ## 8. Pruebas Unitarias (Testing)
 
@@ -128,15 +124,12 @@ El comando mágico para correr todas tus pruebas:
 python manage.py test
 ```
 
-## 9. Características Avanzadas (Nuevo)
+### 🧪 Pruebas e Internacionalización (i18n)
+Dado que nuestra app soporta múltiples idiomas, las pruebas deben tener esto en cuenta:
+*   **Pruebas de Lógica:** Se ejecutan en inglés por defecto (usando `activate('en')` en `setUp`) para asegurar consistencia.
+*   **Pruebas de Traducción:** Hemos creado una clase específica `TodoViewTestSpanish` que activa el español (`activate('es')`) para verificar que los textos se traduzcan correctamente en la interfaz.
 
-Hemos añadido funcionalidades avanzadas a nuestra aplicación:
-
-*   **Dashboard:** Una vista personalizada que muestra estadísticas y gráficos.
-*   **Dependencias:** Las tareas pueden depender de otras tareas (relación ManyToMany).
-*   **Estilos Profesionales:** Uso de Bootstrap y CSS personalizado para una interfaz moderna.
-
-## 10. Ejecutar la Aplicación
+## 9. Ejecutar la Aplicación
 
 Finalmente, para ver tu obra maestra en el navegador:
 
@@ -144,6 +137,18 @@ Finalmente, para ver tu obra maestra en el navegador:
 python manage.py runserver
 ```
 Visita `http://127.0.0.1:8000/` en tu navegador.
+
+## 10. Características Avanzadas
+
+Hemos mejorado la aplicación con funcionalidades potentes:
+
+1.  **Estados de Tarea:** Ahora las tareas pueden estar en estado Pendiente, Activa, Pausada, Bloqueada o Completada.
+2.  **Dependencias:** Puedes marcar que una tarea "bloquea" a otra. No podrás completar una tarea si sus dependencias no están listas.
+3.  **Auditoría (Audit Logs):** Cada vez que creas, editas o eliminas algo, el sistema guarda un registro de quién lo hizo y cuándo.
+4.  **Papelera de Reciclaje (Soft Delete):** Cuando eliminas una tarea, no se borra de verdad. Se marca como "eliminada" para que pueda ser recuperada si fue un error.
+5.  **Idiomas (i18n):** ¡La app habla español e inglés! Puedes cambiar el idioma en la barra superior.
+6.  **Reportes:** Un panel de control (Dashboard) con gráficos y estadísticas en tiempo real.
+7.  **Asignación de Usuarios:** Puedes asignar tareas a usuarios específicos.
 
 ---
 **¡Felicidades!** Ahora tienes las bases para construir cualquier aplicación web con Django.
@@ -212,8 +217,6 @@ INSTALLED_APPS = [
     class Todo(models.Model):
         title = models.CharField(max_length=200) # Short text
         is_resolved = models.BooleanField(default=False) # True/False
-        # Many-to-many relationship for dependencies
-        dependencies = models.ManyToManyField('self', symmetrical=False, blank=True)
     ```
 
 ### Applying changes (Migrations)
@@ -238,7 +241,6 @@ Every time you modify `models.py`, you must run these two commands to update the
     *   `CreateView`: To show a creation form.
     *   `UpdateView`: To edit.
     *   `DeleteView`: To delete.
-    *   `TemplateView`: For static pages or custom dashboards.
 
 ## 6. Configuring Routes (URLs)
 
@@ -253,7 +255,6 @@ URLs tell Django which view to execute when a user visits an address.
 
 *   **Location:** `todo_app/templates/todo_app/`
 *   **Inheritance:** We use a `base.html` that contains the common structure (header, footer, CSS styles) and other templates "inherit" from it using `{% extends 'todo_app/base.html' %}`.
-*   **Styling:** You can use CSS frameworks like Bootstrap to quickly improve the look and feel.
 
 ## 8. Unit Testing
 
@@ -271,15 +272,12 @@ The magic command to run all your tests:
 python manage.py test
 ```
 
-## 9. Advanced Features (New)
+### 🧪 Testing and Internationalization (i18n)
+Since our app supports multiple languages, tests must account for this:
+*   **Logic Tests:** Run in English by default (using `activate('en')` in `setUp`) to ensure consistency.
+*   **Translation Tests:** We created a specific class `TodoViewTestSpanish` that activates Spanish (`activate('es')`) to verify that texts are correctly translated in the interface.
 
-We have added advanced features to our application:
-
-*   **Dashboard:** A custom view showing statistics and charts.
-*   **Dependencies:** Tasks can depend on other tasks (ManyToMany relationship).
-*   **Professional Styling:** Using Bootstrap and custom CSS for a modern interface.
-
-## 10. Running the Application
+## 9. Running the Application
 
 Finally, to see your masterpiece in the browser:
 
@@ -288,5 +286,83 @@ python manage.py runserver
 ```
 Visit `http://127.0.0.1:8000/` in your browser.
 
+## 10. Características Enterprise Implementadas
+
+Esta aplicación va más allá de un simple gestor de tareas. Incluye características avanzadas típicas de aplicaciones empresariales:
+
+### 10.1 Sistema de Auditoría Automática (Signals)
+- **Qué es:** Registro automático de todas las acciones (crear, editar, eliminar)
+- **Tecnología:** Django Signals (`post_save`, `post_delete`, `pre_save`)
+- **Beneficio:** No necesitas escribir código de logging manualmente en cada vista
+- **Archivo:** `todo_app/signals.py`
+
+### 10.2 Comentarios y Archivos Adjuntos
+- **Qué es:** Sistema completo para agregar comentarios con archivos a las tareas
+- **Funcionalidad:** Cada tarea tiene su sección de comentarios con soporte para adjuntos
+- **Archivos:** `todo_app/forms.py` (CommentForm), `templates/todo_app/todo_detail.html`
+
+### 10.3 Sistema de Notificaciones
+- **Qué es:** Notificaciones automáticas en tiempo real
+- **Casos de uso:**
+  - Te asignan una tarea nueva
+  - Se completa una dependencia de tus tareas
+- **Interfaz:** Badge con contador + dropdown en navbar
+- **Archivo:** `todo_app/context_processors.py`
+
+### 10.4 Gestión de Usuarios (Admin Panel)
+- **Qué es:** Panel completo para gestionar usuarios
+- **Funcionalidad:**
+  - Listar todos los usuarios
+  - Crear nuevos usuarios
+  - Editar permisos (admin, staff, activo/inactivo)
+- **Acceso:** Solo superusuarios
+- **Archivos:** `todo_app/views.py` (UserListView, UserCreateView, UserUpdateView)
+
+### 10.5 Módulo de Reportes
+- **Qué es:** Sistema de filtros y exportación de datos
+- **Funcionalidad:**
+  - Filtrar tareas por estado y usuario
+  - Ver tabla responsive
+  - Exportar a CSV con un click
+- **Acceso:** Solo superusuarios
+- **Archivo:** `todo_app/views.py` (ReportView)
+
+### 10.6 Sistema de Autenticación
+- **Qué es:** Login/logout completo con templates modernos
+- **Funcionalidad:**
+  - Página de login con diseño profesional
+  - Protección de todas las vistas (LoginRequiredMixin)
+  - Redirección automática al dashboard
+- **Comando especial:**
+  ```bash
+  python manage.py create_default_admin --username=admin --email=admin@example.com --password=TuPassword123
+  ```
+
+### 10.7 Internacionalización (i18n)
+- **Qué es:** Soporte completo para múltiples idiomas
+- **Idiomas disponibles:** Español e Inglés
+- **Interfaz:** Language switcher en la navbar
+- **Archivos:** `locale/es/`, `locale/en/`
+
+### 10.8 Soft Delete (Eliminación Suave)
+- **Qué es:** Las tareas no se borran físicamente
+- **Funcionalidad:** Se marcan con `deleted_at` y pueden recuperarse
+- **Beneficio:** Protección contra eliminaciones accidentales
+
+### 10.9 Estados y Dependencias de Tareas
+- **Estados:** PENDING, ACTIVE, ON_HOLD, BLOCKED, COMPLETED
+- **Dependencias:** Una tarea puede depender de otras
+- **Notificaciones:** Se avisa automáticamente cuando se completan dependencias
+
+### 📊 Resumen Técnico
+- **29 tests unitarios** verifican todas las funcionalidades
+- **4 modelos:** Todo, AuditLog, Comment, Notification
+- **10+ vistas:** Dashboard, CRUD de tareas, gestión de usuarios, reportes
+- **Signals:** Automatización de audit logs y notificaciones
+- **Middleware personalizado:** ThreadLocalUserMiddleware para capturar usuario en signals
+- **Context processors:** Notificaciones disponibles globalmente
+- **Bootstrap 5:** Interfaz moderna y responsive
+
 ---
-**Congratulations!** You now have the foundation to build any web application with Django.
+**¡Felicidades!** Ahora tienes las bases para construir cualquier aplicación web enterprise con Django.
+

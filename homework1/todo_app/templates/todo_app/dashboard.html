@@ -1,8 +1,9 @@
 {% extends 'todo_app/base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
-    <h1 class="h2">Dashboard</h1>
+    <h1 class="h2">{% trans "Dashboard" %}</h1>
 </div>
 
 <!-- Stats Cards -->
@@ -12,7 +13,8 @@
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Tasks</div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{% trans "Total Tasks" %}
+                        </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_tasks }}</div>
                     </div>
                     <div class="col-auto">
@@ -28,7 +30,8 @@
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completed</div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">{% trans "Completed" %}
+                        </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ completed_tasks }}</div>
                     </div>
                     <div class="col-auto">
@@ -44,7 +47,8 @@
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">{% trans "Pending" %}
+                        </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_tasks }}</div>
                     </div>
                     <div class="col-auto">
@@ -57,19 +61,64 @@
 </div>
 
 <div class="row">
-    <!-- Charts -->
-    <div class="col-xl-8 col-lg-7">
-        <div class="card shadow mb-4">
+    <!-- Charts Row 1 -->
+    <div class="col-xl-6 col-lg-6 mb-4">
+        <div class="card shadow">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Task Status Overview</h6>
+                <h6 class="m-0 font-weight-bold text-primary">{% trans "Task Status Overview" %}</h6>
             </div>
             <div class="card-body">
-                <div class="chart-area">
-                    <canvas id="myAreaChart"></canvas>
+                <div class="chart-area" style="height: 300px;">
+                    <canvas id="statusChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
+    
+    <div class="col-xl-6 col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans "Tasks Created by Date" %} ({% trans "Last 30 days" %})</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area" style="height: 300px;">
+                    <canvas id="tasksByDateChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Charts Row 2 -->
+    <div class="col-xl-8 col-lg-7 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans "Tasks by Status per Month" %} ({% trans "Last 6 months" %})</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area" style="height: 300px;">
+                    <canvas id="monthlyStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-4 col-lg-5 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">{% trans "Completed Tasks by User" %}</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area" style="height: 300px;">
+                    <canvas id="userChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
 
     <!-- Task Lists -->
     <div class="col-xl-4 col-lg-5">
@@ -77,7 +126,7 @@
         {% if overdue_tasks %}
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-danger">Overdue Tasks</h6>
+                <h6 class="m-0 font-weight-bold text-danger">{% trans "Overdue Tasks" %}</h6>
             </div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
@@ -95,7 +144,7 @@
         <!-- Upcoming Tasks -->
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Upcoming Tasks</h6>
+                <h6 class="m-0 font-weight-bold text-primary">{% trans "Upcoming Tasks" %}</h6>
             </div>
             <div class="card-body">
                 <ul class="list-group list-group-flush">
@@ -105,7 +154,7 @@
                         <span class="badge bg-info rounded-pill">{{ task.due_date|date:"M d" }}</span>
                     </li>
                     {% empty %}
-                    <li class="list-group-item text-muted">No upcoming tasks</li>
+                    <li class="list-group-item text-muted">{% trans "No upcoming tasks" %}</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -114,36 +163,145 @@
 </div>
 
 <script>
-    // Chart.js implementation
-    var ctx = document.getElementById("myAreaChart");
-    var myPieChart = new Chart(ctx, {
+    // Chart 1: Task Status Overview (Doughnut)
+    var ctx1 = document.getElementById("statusChart");
+    var statusChart = new Chart(ctx1, {
         type: 'doughnut',
         data: {
-            labels: ["Completed", "Pending"],
+            labels: ["{% trans 'Completed' %}", "{% trans 'Pending' %}"],
             datasets: [{
                 data: [{{ completed_tasks }}, {{ pending_tasks }}],
-        backgroundColor: ['#1cc88a', '#f6c23e'],
-        hoverBackgroundColor: ['#17a673', '#dda20a'],
-        hoverBorderColor: "rgba(234, 236, 244, 1)",
-    }],
+                backgroundColor: ['#1cc88a', '#f6c23e'],
+                hoverBackgroundColor: ['#17a673', '#dda20a'],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
         },
-    options: {
-        maintainAspectRatio: false,
-            tooltips: {
-            backgroundColor: "rgb(255,255,255)",
-                bodyFontColor: "#858796",
-                    borderColor: '#dddfeb',
-                        borderWidth: 1,
-                            xPadding: 15,
-                                yPadding: 15,
-                                    displayColors: false,
-                                        caretPadding: 10,
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom'
+                }
+            }
+        },
+    });
+    
+    // Chart 2: Tasks by Date (Line)
+    var ctx2 = document.getElementById("tasksByDateChart");
+    var tasksByDateChart = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: {{ tasks_by_date_labels }},
+            datasets: [{
+                label: "{% trans 'Tasks Created' %}",
+                data: {{ tasks_by_date_data }},
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
             },
-        legend: {
-            display: true,
-                position: 'bottom'
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
         },
-        cutoutPercentage: 80,
+    });
+    
+    // Chart 3: Tasks by Status per Month (Bar)
+    var ctx3 = document.getElementById("monthlyStatusChart");
+    var monthlyStatusChart = new Chart(ctx3, {
+        type: 'bar',
+        data: {
+            labels: {{ monthly_labels }},
+            datasets: [
+                {
+                    label: "{% trans 'Active' %}",
+                    data: {{ monthly_active }},
+                    backgroundColor: '#4e73df'
+                },
+                {
+                    label: "{% trans 'Completed' %}",
+                    data: {{ monthly_completed }},
+                    backgroundColor: '#1cc88a'
+                },
+                {
+                    label: "{% trans 'On Hold' %}",
+                    data: {{ monthly_on_hold }},
+                    backgroundColor: '#f6c23e'
+                },
+                {
+                    label: "{% trans 'Blocked' %}",
+                    data: {{ monthly_blocked }},
+                    backgroundColor: '#e74a3b'
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        },
+    });
+    
+    // Chart 4: Completed Tasks by User (Bar)
+    var ctx4 = document.getElementById("userChart");
+    var userChart = new Chart(ctx4, {
+        type: 'bar',
+        data: {
+            labels: {{ user_labels }},
+            datasets: [{
+                label: "{% trans 'Completed Tasks' %}",
+                data: {{ user_data }},
+                backgroundColor: '#1cc88a',
+                hoverBackgroundColor: '#17a673'
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
         },
     });
 </script>

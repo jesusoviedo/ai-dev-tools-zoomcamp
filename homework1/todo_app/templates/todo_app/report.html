@@ -1,0 +1,82 @@
+{% extends 'todo_app/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">{% trans "Task Report" %}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="?{{ request.GET.urlencode }}&export=csv" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-file-earmark-spreadsheet"></i> {% trans "Export CSV" %}
+        </a>
+    </div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">{% trans "Filters" %}</h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">{% trans "Status" %}</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">{% trans "All Statuses" %}</option>
+                    <option value="ACTIVE" {% if request.GET.status == 'ACTIVE' %}selected{% endif %}>{% trans "Active" %}</option>
+                    <option value="ON_HOLD" {% if request.GET.status == 'ON_HOLD' %}selected{% endif %}>{% trans "On Hold" %}</option>
+                    <option value="BLOCKED" {% if request.GET.status == 'BLOCKED' %}selected{% endif %}>{% trans "Blocked" %}</option>
+                    <option value="COMPLETED" {% if request.GET.status == 'COMPLETED' %}selected{% endif %}>{% trans "Completed" %}</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="user" class="form-label">{% trans "Assigned To" %}</label>
+                <select name="user" id="user" class="form-select">
+                    <option value="">{% trans "All Users" %}</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}" {% if request.GET.user == user.id|stringformat:"i" %}selected{% endif %}>{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">{% trans "Filter" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Title" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
+                <th scope="col">{% trans "Assigned To" %}</th>
+                <th scope="col">{% trans "Due Date" %}</th>
+                <th scope="col">{% trans "Created At" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.title }}</td>
+                <td>
+                    {% if task.status == 'COMPLETED' %}
+                    <span class="badge bg-success">{{ task.get_status_display }}</span>
+                    {% elif task.status == 'ACTIVE' %}
+                    <span class="badge bg-primary">{{ task.get_status_display }}</span>
+                    {% else %}
+                    <span class="badge bg-secondary">{{ task.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ task.assigned_to.username|default:"-" }}</td>
+                <td>{{ task.due_date|date:"M d, Y"|default:"-" }}</td>
+                <td>{{ task.created_at|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center text-muted">{% trans "No tasks found matching filters." %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

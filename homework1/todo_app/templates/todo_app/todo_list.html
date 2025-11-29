@@ -1,19 +1,41 @@
 {% extends 'todo_app/base.html' %}
+{% load i18n %}
 
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
-    <h1 class="h2">All Tasks</h1>
+    <h1 class="h2">{% trans "All Tasks" %}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
+        <!-- Search Form -->
+        <form class="d-flex me-3" method="get">
+            <input class="form-control form-control-sm me-2" type="search" name="q"
+                placeholder="{% trans 'Search tasks...' %}" aria-label="{% trans 'Search' %}" value="{{ request.GET.q|default:'' }}">
+            <button class="btn btn-sm btn-outline-secondary" type="submit">{% trans "Search" %}</button>
+        </form>
+
         <div class="btn-group me-2">
             <a href="?status=all"
-                class="btn btn-sm btn-outline-secondary {% if not request.GET.status or request.GET.status == 'all' %}active{% endif %}">All</a>
-            <a href="?status=pending"
-                class="btn btn-sm btn-outline-secondary {% if request.GET.status == 'pending' %}active{% endif %}">Pending</a>
+                class="btn btn-sm btn-outline-secondary {% if not request.GET.status or request.GET.status == 'all' %}active{% endif %}">
+                {% trans "All" %}
+            </a>
+            <a href="?status=ACTIVE"
+                class="btn btn-sm btn-outline-secondary {% if request.GET.status == 'ACTIVE' %}active{% endif %}">
+                {% trans "Active" %}
+            </a>
+            <a href="?status=ON_HOLD"
+                class="btn btn-sm btn-outline-secondary {% if request.GET.status == 'ON_HOLD' %}active{% endif %}">
+                {% trans "On Hold" %}
+            </a>
+            <a href="?status=BLOCKED"
+                class="btn btn-sm btn-outline-secondary {% if request.GET.status == 'BLOCKED' %}active{% endif %}">
+                {% trans "Blocked" %}
+            </a>
             <a href="?status=completed"
-                class="btn btn-sm btn-outline-secondary {% if request.GET.status == 'completed' %}active{% endif %}">Completed</a>
+                class="btn btn-sm btn-outline-secondary {% if request.GET.status == 'completed' %}active{% endif %}">
+                {% trans "Completed" %}
+            </a>
         </div>
         <a href="{% url 'todo-create' %}" class="btn btn-sm btn-primary">
-            <i class="bi bi-plus"></i> New Task
+            <i class="bi bi-plus"></i> {% trans "New Task" %}
         </a>
     </div>
 </div>
@@ -24,45 +46,51 @@
             <table class="table table-hover" id="dataTable" width="100%" cellspacing="0">
                 <thead>
                     <tr>
-                        <th>Status</th>
-                        <th>Title</th>
-                        <th>Due Date</th>
-                        <th>Dependencies</th>
-                        <th>Actions</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Title" %}</th>
+                        <th>{% trans "Due Date" %}</th>
+                        <th>{% trans "Assigned To" %}</th>
+                        <th>{% trans "Actions" %}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for todo in todos %}
                     <tr>
                         <td>
-                            {% if todo.is_resolved %}
-                            <span class="badge bg-success">Completed</span>
+                            {% if todo.status == 'COMPLETED' %}
+                            <span class="badge bg-success">{% trans "Completed" %}</span>
+                            {% elif todo.status == 'BLOCKED' %}
+                            <span class="badge bg-danger">{% trans "Blocked" %}</span>
+                            {% elif todo.status == 'ON_HOLD' %}
+                            <span class="badge bg-warning text-dark">{% trans "On Hold" %}</span>
+                            {% elif todo.status == 'ACTIVE' %}
+                            <span class="badge bg-primary">{% trans "Active" %}</span>
                             {% else %}
-                            {% if todo.due_date and todo.due_date|date:"Y-m-d" < now|date:"Y-m-d" %} <span
-                                class="badge bg-danger">Overdue</span>
-                                {% else %}
-                                <span class="badge bg-warning text-dark">Pending</span>
-                                {% endif %}
-                                {% endif %}
+                            <span class="badge bg-secondary">{% trans "Pending" %}</span>
+                            {% endif %}
                         </td>
                         <td>
-                            <span class="{% if todo.is_resolved %}text-decoration-line-through text-muted{% endif %}">
+                            <a href="{% url 'todo-detail' todo.pk %}"
+                                class="text-decoration-none {% if todo.status == 'COMPLETED' %}text-decoration-line-through text-muted{% else %}text-dark{% endif %}">
                                 {{ todo.title }}
-                            </span>
+                            </a>
+                            {% if todo.dependencies.exists %}
+                            <i class="bi bi-link-45deg text-muted" title="{% trans 'Has dependencies' %}"></i>
+                            {% endif %}
                         </td>
                         <td>
                             {% if todo.due_date %}
-                            {{ todo.due_date|date:"M d, Y H:i" }}
+                            {{ todo.due_date|date:"M d, Y" }}
                             {% else %}
                             -
                             {% endif %}
                         </td>
                         <td>
-                            {% for dep in todo.dependencies.all %}
-                            <span class="badge bg-secondary">{{ dep.title }}</span>
-                            {% empty %}
+                            {% if todo.assigned_to %}
+                            <span class="badge bg-light text-dark border">{{ todo.assigned_to.username }}</span>
+                            {% else %}
                             -
-                            {% endfor %}
+                            {% endif %}
                         </td>
                         <td>
                             <a href="{% url 'todo-update' todo.pk %}" class="btn btn-sm btn-info text-white">
@@ -75,12 +103,35 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center py-4">No tasks found.</td>
+                        <td colspan="5" class="text-center py-4">{% trans "No tasks found." %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="{% trans 'Page navigation' %}">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{% trans "Previous" %}</a>
+                </li>
+                {% endif %}
+                <li class="page-item disabled">
+                    <span class="page-link">{% blocktrans with page=page_obj.number total=page_obj.paginator.num_pages %}Page {{ page }} of {{ total }}{% endblocktrans %}</span>
+                </li>
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{% trans "Next" %}</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
