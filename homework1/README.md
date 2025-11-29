@@ -72,7 +72,7 @@ Esta tarea cubre los fundamentos del desarrollo asistido por IA creando una apli
    - Abrir navegador en: http://127.0.0.1:8000/
    - Login con las credenciales que creaste en el paso 4
 
-7. **Ejecutar los tests (29 tests):**
+7. **Ejecutar los tests:**
    ```bash
    python manage.py test todo_app
    ```
@@ -84,17 +84,29 @@ homework1/
 ├── manage.py                  # Script de gestión de Django
 ├── todo_project/              # Configuración del proyecto
 │   ├── settings.py           # Configuración (DB, i18n, auth)
-│   └── urls.py               # URLs principales
+│   ├── urls.py               # URLs principales
+│   └── wsgi.py               # Entry point para WSGI
 ├── todo_app/                  # Aplicación TODO
-│   ├── models.py             # Todo, AuditLog, Comment, Notification
-│   ├── views.py              # Vistas (Dashboard, User Management, Reports)
-│   ├── signals.py            # Audit logs automáticos
-│   ├── forms.py              # Formularios
-│   ├── templates/            # Templates HTML
-│   ├── management/commands/  # Comando create_default_admin
-│   └── tests.py              # 29 tests unitarios
+│   ├── admin.py              # Configuración del admin
+│   ├── apps.py               # Configuración de la app
+│   ├── context_processors.py # Procesadores de contexto (Notificaciones)
+│   ├── forms.py              # Formularios (Todo, Comment, User)
+│   ├── middleware.py         # Middleware (PasswordChange, ThreadLocal)
+│   ├── models.py             # Modelos (Todo, AuditLog, Comment, Notification)
+│   ├── signals.py            # Signals (Audit logs, Notificaciones)
+│   ├── tests.py              # 70 tests unitarios
+│   ├── urls.py               # URLs de la aplicación
+│   ├── views.py              # Vistas (Dashboard, CRUD, Reportes)
+│   ├── management/           # Comandos de gestión
+│   │   └── commands/         # create_default_admin
+│   ├── migrations/           # Migraciones de base de datos
+│   └── templates/            # Templates HTML
+│       └── todo_app/         # Templates específicos de la app
 ├── locale/                    # Traducciones (es/en)
+├── attachments/               # Archivos adjuntos (media)
+├── db.sqlite3                 # Base de datos SQLite
 ├── pyproject.toml            # Dependencias del proyecto
+├── uv.lock                   # Lockfile de dependencias
 ├── .python-version           # Versión de Python requerida
 ├── GUIA_DJANGO.md            # Guía completa (español/inglés)
 └── README.md                 # Este archivo
@@ -103,7 +115,7 @@ homework1/
 ### 📝 Notas importantes
 
 - La aplicación es un gestor de tareas enterprise completo
-- **29 tests unitarios** verifican todas las funcionalidades
+- **70 tests unitarios** verifican todas las funcionalidades
 - Sistema de autenticación completo (debes crear usuario admin primero)
 - Interfaz moderna con Bootstrap 5
 - Todas las dependencias están en `pyproject.toml`
@@ -181,7 +193,7 @@ This assignment covers the fundamentals of AI-assisted development by creating a
    - Open browser at: http://127.0.0.1:8000/
    - Login with credentials created in step 4
 
-7. **Run tests (29 tests):**
+7. **Run tests:**
    ```bash
    python manage.py test todo_app
    ```
@@ -193,17 +205,29 @@ homework1/
 ├── manage.py                  # Django management script
 ├── todo_project/              # Project configuration
 │   ├── settings.py           # Configuration (DB, i18n, auth)
-│   └── urls.py               # Main URLs
+│   ├── urls.py               # Main URLs
+│   └── wsgi.py               # WSGI entry point
 ├── todo_app/                  # TODO application
-│   ├── models.py             # Todo, AuditLog, Comment, Notification
-│   ├── views.py              # Views (Dashboard, User Management, Reports)
-│   ├── signals.py            # Automatic audit logs
-│   ├── forms.py              # Forms
-│   ├── templates/            # HTML templates
-│   ├── management/commands/  # create_default_admin command
-│   └── tests.py              # 29 unit tests
+│   ├── admin.py              # Admin configuration
+│   ├── apps.py               # App configuration
+│   ├── context_processors.py # Context processors (Notifications)
+│   ├── forms.py              # Forms (Todo, Comment, User)
+│   ├── middleware.py         # Middleware (PasswordChange, ThreadLocal)
+│   ├── models.py             # Models (Todo, AuditLog, Comment, Notification)
+│   ├── signals.py            # Signals (Audit logs, Notifications)
+│   ├── tests.py              # 70 unit tests
+│   ├── urls.py               # App URLs
+│   ├── views.py              # Views (Dashboard, CRUD, Reports)
+│   ├── management/           # Management commands
+│   │   └── commands/         # create_default_admin
+│   ├── migrations/           # Database migrations
+│   └── templates/            # HTML templates
+│       └── todo_app/         # App-specific templates
 ├── locale/                    # Translations (es/en)
+├── attachments/               # Attachments (media)
+├── db.sqlite3                 # SQLite database
 ├── pyproject.toml            # Project dependencies
+├── uv.lock                   # Dependency lockfile
 ├── .python-version           # Required Python version
 ├── GUIA_DJANGO.md            # Complete guide (Spanish/English)
 └── README.md                 # This file
@@ -212,7 +236,7 @@ homework1/
 ### 📝 Important notes
 
 - The application is a complete enterprise task manager
-- **29 unit tests** verify all functionalities
+- **70 unit tests** verify all functionalities
 - Complete authentication system (must create admin user first)
 - Modern interface with Bootstrap 5
 - All dependencies are in `pyproject.toml`
