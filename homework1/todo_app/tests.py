@@ -414,6 +414,7 @@ class TodoViewTest(TestCase):
 
 class UserManagementViewTest(TestCase):
     def setUp(self):
+        activate('en')
         self.admin_user = User.objects.create_superuser(username='admin', email='admin@example.com', password='password')
         self.regular_user = User.objects.create_user(username='user', password='password')
         self.client.force_login(self.admin_user)
@@ -470,6 +471,7 @@ class UserManagementViewTest(TestCase):
 
 class ReportViewTest(TestCase):
     def setUp(self):
+        activate('en')
         self.admin_user = User.objects.create_superuser(username='admin', email='admin@example.com', password='password')
         self.regular_user = User.objects.create_user(username='user', password='password')
         self.client.force_login(self.admin_user)
@@ -504,6 +506,7 @@ class ReportViewTest(TestCase):
 
 class SettingsViewTest(TestCase):
     def setUp(self):
+        activate('en')
         self.user = User.objects.create_user(username='testuser', password='password', email='test@example.com')
         self.client.force_login(self.user)
 
@@ -539,6 +542,7 @@ class SettingsViewTest(TestCase):
 
 class PasswordChangeViewTest(TestCase):
     def setUp(self):
+        activate('en')
         self.user = User.objects.create_user(username='testuser', password='password')
         self.client.force_login(self.user)
 
@@ -574,6 +578,7 @@ class PasswordChangeViewTest(TestCase):
 
 class NotificationViewTest(TestCase):
     def setUp(self):
+        activate('en')
         self.user = User.objects.create_user(username='testuser', password='password')
         self.client.force_login(self.user)
 
@@ -673,6 +678,7 @@ class SignalTest(TestCase):
 
 class IntegrationTest(TestCase):
     def setUp(self):
+        activate('en')
         self.user = User.objects.create_user(username='testuser', password='password')
         self.client.force_login(self.user)
 
