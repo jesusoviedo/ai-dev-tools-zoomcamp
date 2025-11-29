@@ -58,6 +58,24 @@
             </div>
         </div>
     </div>
+
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">{% trans "Blocked" %}
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ blocked_tasks }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-exclamation-circle bi-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="row">
@@ -163,146 +181,124 @@
 </div>
 
 <script>
-    // Chart 1: Task Status Overview (Doughnut)
-    var ctx1 = document.getElementById("statusChart");
-    var statusChart = new Chart(ctx1, {
-        type: 'doughnut',
-        data: {
-            labels: ["{% trans 'Completed' %}", "{% trans 'Pending' %}"],
-            datasets: [{
-                data: [{{ completed_tasks }}, {{ pending_tasks }}],
-                backgroundColor: ['#1cc88a', '#f6c23e'],
-                hoverBackgroundColor: ['#17a673', '#dda20a'],
-                hoverBorderColor: "rgba(234, 236, 244, 1)",
-            }],
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'bottom'
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. OBTENCIÓN DE DATOS (La clave es usar |safe para que Django no rompa el JSON)
+        
+        // chart_labels viene de views.py como un string JSON. 
+        // NECESITA |safe para renderizarse como objeto JS válido.
+        var chartLabels = {{ chart_labels|default:"{}"|safe }};
+        
+        // Datos numéricos (no necesitan comillas ni json.dumps porque son enteros)
+        var completedCount = {{ completed_tasks|default:0 }};
+        var pendingCount = {{ pending_tasks|default:0 }};
+        var blockedCount = {{ blocked_tasks|default:0 }};
+        
+        // Listas JSON (vienen de views.py con json.dumps, necesitan |safe)
+        var tasksByDateLabels = {{ tasks_by_date_labels|default:"[]"|safe }};
+        var tasksByDateData = {{ tasks_by_date_data|default:"[]"|safe }};
+        
+        var monthlyLabels = {{ monthly_labels|default:"[]"|safe }};
+        var monthlyActive = {{ monthly_active|default:"[]"|safe }};
+        var monthlyCompleted = {{ monthly_completed|default:"[]"|safe }};
+        var monthlyOnHold = {{ monthly_on_hold|default:"[]"|safe }};
+        var monthlyBlocked = {{ monthly_blocked|default:"[]"|safe }};
+        
+        var userLabels = {{ user_labels|default:"[]"|safe }};
+        var userData = {{ user_data|default:"[]"|safe }};
+
+        // 2. CONFIGURACIÓN DEL GRÁFICO 1: Estado (Doughnut)
+        var ctx1 = document.getElementById("statusChart");
+                if (ctx1) {
+                    new Chart(ctx1, {
+                        type: 'doughnut',
+                        data: {
+                            labels: [
+                                (chartLabels.completed || "Completed") + " (" + completedCount + ")",
+                                (chartLabels.pending || "Pending") + " (" + pendingCount + ")",
+                                (chartLabels.blocked || "Blocked") + " (" + blockedCount + ")" 
+                            ],
+                            datasets: [{
+                                data: [completedCount, pendingCount, blockedCount], 
+                                backgroundColor: ['#1cc88a', '#f6c23e', '#e74a3b'], 
+                                hoverBackgroundColor: ['#17a673', '#dda20a', '#c0392b'],
+                                hoverBorderColor: "rgba(234, 236, 244, 1)",
+                            }],
+                        },
+                        options: {
+                            maintainAspectRatio: false,
+                            responsive: true,
+                            plugins: { legend: { position: 'bottom' } }
+                        }
+                    });
                 }
-            }
-        },
-    });
-    
-    // Chart 2: Tasks by Date (Line)
-    var ctx2 = document.getElementById("tasksByDateChart");
-    var tasksByDateChart = new Chart(ctx2, {
-        type: 'line',
-        data: {
-            labels: {{ tasks_by_date_labels }},
-            datasets: [{
-                label: "{% trans 'Tasks Created' %}",
-                data: {{ tasks_by_date_data }},
-                borderColor: '#4e73df',
-                backgroundColor: 'rgba(78, 115, 223, 0.1)',
-                tension: 0.3,
-                fill: true
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
+
+        // 3. CONFIGURACIÓN DEL GRÁFICO 2: Tareas por Fecha (Line)
+        var ctx2 = document.getElementById("tasksByDateChart");
+        if (ctx2) {
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: tasksByDateLabels,
+                    datasets: [{
+                        label: chartLabels.tasks_created || "Tasks Created",
+                        data: tasksByDateData,
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
                 }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
+            });
+        }
+
+        // 4. CONFIGURACIÓN DEL GRÁFICO 3: Estado Mensual (Bar)
+        var ctx3 = document.getElementById("monthlyStatusChart");
+        if (ctx3) {
+            new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: monthlyLabels,
+                    datasets: [
+                        { label: chartLabels.active || "Active", data: monthlyActive, backgroundColor: '#4e73df' },
+                        { label: chartLabels.completed || "Completed", data: monthlyCompleted, backgroundColor: '#1cc88a' },
+                        { label: chartLabels.on_hold || "On Hold", data: monthlyOnHold, backgroundColor: '#f6c23e' },
+                        { label: chartLabels.blocked || "Blocked", data: monthlyBlocked, backgroundColor: '#e74a3b' }
+                    ]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }
                     }
                 }
-            }
-        },
-    });
-    
-    // Chart 3: Tasks by Status per Month (Bar)
-    var ctx3 = document.getElementById("monthlyStatusChart");
-    var monthlyStatusChart = new Chart(ctx3, {
-        type: 'bar',
-        data: {
-            labels: {{ monthly_labels }},
-            datasets: [
-                {
-                    label: "{% trans 'Active' %}",
-                    data: {{ monthly_active }},
-                    backgroundColor: '#4e73df'
+            });
+        }
+
+        // 5. CONFIGURACIÓN DEL GRÁFICO 4: Usuarios (Bar)
+        var ctx4 = document.getElementById("userChart");
+        if (ctx4) {
+            new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: userLabels,
+                    datasets: [{
+                        label: chartLabels.completed_tasks || "Completed Tasks",
+                        data: userData,
+                        backgroundColor: '#1cc88a',
+                    }]
                 },
-                {
-                    label: "{% trans 'Completed' %}",
-                    data: {{ monthly_completed }},
-                    backgroundColor: '#1cc88a'
-                },
-                {
-                    label: "{% trans 'On Hold' %}",
-                    data: {{ monthly_on_hold }},
-                    backgroundColor: '#f6c23e'
-                },
-                {
-                    label: "{% trans 'Blocked' %}",
-                    data: {{ monthly_blocked }},
-                    backgroundColor: '#e74a3b'
+                options: {
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
                 }
-            ]
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            },
-            scales: {
-                x: {
-                    stacked: true
-                },
-                y: {
-                    stacked: true,
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        },
-    });
-    
-    // Chart 4: Completed Tasks by User (Bar)
-    var ctx4 = document.getElementById("userChart");
-    var userChart = new Chart(ctx4, {
-        type: 'bar',
-        data: {
-            labels: {{ user_labels }},
-            datasets: [{
-                label: "{% trans 'Completed Tasks' %}",
-                data: {{ user_data }},
-                backgroundColor: '#1cc88a',
-                hoverBackgroundColor: '#17a673'
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
-        },
+            });
+        }
     });
 </script>
 {% endblock %}

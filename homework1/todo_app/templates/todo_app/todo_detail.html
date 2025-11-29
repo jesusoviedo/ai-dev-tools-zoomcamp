@@ -24,8 +24,7 @@
                 <p><strong>{% trans "Description" %}:</strong> {{ todo.description|default:"-"|linebreaks }}</p>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>{% trans "Status" %}:</strong> <span class="badge bg-secondary">{{
-                                todo.get_status_display }}</span></p>
+                        <p><strong>{% trans "Status" %}:</strong> <span class="badge bg-secondary">{{ todo.get_status_display }}</span></p>
                         <p><strong>{% trans "Due Date" %}:</strong> {{ todo.due_date|date:"M d, Y"|default:"-" }}</p>
                     </div>
                     <div class="col-md-6">

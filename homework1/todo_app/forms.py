@@ -16,7 +16,7 @@ class TodoForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'status': forms.Select(attrs={'class': 'form-select'}),
-            'dependencies': forms.SelectMultiple(attrs={'class': 'form-select'}),
+            'dependencies': forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
             'assigned_to': forms.Select(attrs={'class': 'form-select'}),
         }
         labels = {
@@ -37,9 +37,14 @@ class TodoForm(forms.ModelForm):
         if not self.instance.pk:
             self.fields['status'].widget = forms.HiddenInput()
         
-        # If editing, exclude self from dependencies
+        # Improve dependencies queryset - show all tasks except self, ordered by title
+        dependencies_queryset = Todo.objects.all().order_by('title')
         if self.instance.pk:
-            self.fields['dependencies'].queryset = self.fields['dependencies'].queryset.exclude(pk=self.instance.pk)
+            dependencies_queryset = dependencies_queryset.exclude(pk=self.instance.pk)
+        self.fields['dependencies'].queryset = dependencies_queryset
+        
+        # Customize the label format for dependencies to show title and status
+        self.fields['dependencies'].label_from_instance = lambda obj: f"{obj.title} ({obj.get_status_display()})"
 
 class CommentForm(forms.ModelForm):
     class Meta:
@@ -94,7 +99,8 @@ class UserUpdateForm(UserChangeForm):
             # Mark that user must change password
             if commit:
                 user.save()
-                profile, created = user.profile.get_or_create(user=user)
+                from .models import UserProfile
+                profile, created = UserProfile.objects.get_or_create(user=user)
                 profile.must_change_password = True
                 profile.save()
                 # Store temp password in form for display

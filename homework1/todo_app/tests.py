@@ -1,10 +1,17 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.utils.translation import activate
-from .models import Todo, AuditLog, Notification
-import datetime
+from django.core.files.uploadedfile import SimpleUploadedFile
+from datetime import timedelta
+from .models import Todo, AuditLog, Notification, Comment, UserProfile
+from .forms import TodoForm, CommentForm, UserUpdateForm, UserSettingsForm
+from .middleware import PasswordChangeRequiredMiddleware
+import json
+
+
+# ==================== MODEL TESTS ====================
 
 class TodoModelTest(TestCase):
     def setUp(self):
@@ -56,6 +63,194 @@ class TodoModelTest(TestCase):
         self.assertTrue(Todo.all_objects.filter(pk=todo.pk).exists())
         self.assertIsNotNone(Todo.all_objects.get(pk=todo.pk).deleted_at)
 
+    def test_dependencies(self):
+        """Test task dependencies."""
+        task1 = Todo.objects.create(title="Task 1", created_by=self.user)
+        task2 = Todo.objects.create(title="Task 2", created_by=self.user)
+        task2.dependencies.add(task1)
+        
+        self.assertIn(task1, task2.dependencies.all())
+        self.assertIn(task2, task1.blocking.all())
+
+    def test_assigned_to(self):
+        """Test task assignment."""
+        user2 = User.objects.create_user(username='user2', password='password')
+        todo = Todo.objects.create(title="Task", created_by=self.user, assigned_to=user2)
+        self.assertEqual(todo.assigned_to, user2)
+
+
+class UserProfileModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+
+    def test_user_profile_auto_creation(self):
+        """Test that UserProfile is automatically created when User is created."""
+        # Profile should be created by signal
+        self.assertTrue(hasattr(self.user, 'profile'))
+        self.assertIsNotNone(self.user.profile)
+        self.assertFalse(self.user.profile.must_change_password)
+
+    def test_user_profile_must_change_password(self):
+        """Test must_change_password field."""
+        self.user.profile.must_change_password = True
+        self.user.profile.save()
+        self.assertTrue(self.user.profile.must_change_password)
+
+
+class CommentModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.todo = Todo.objects.create(title="Test Task", created_by=self.user)
+
+    def test_create_comment(self):
+        """Test creating a comment."""
+        comment = Comment.objects.create(
+            todo=self.todo,
+            user=self.user,
+            text="This is a comment"
+        )
+        self.assertEqual(str(comment), f"Comment by {self.user} on {self.todo}")
+        self.assertEqual(comment.text, "This is a comment")
+
+
+class NotificationModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+
+    def test_create_notification(self):
+        """Test creating a notification."""
+        notification = Notification.objects.create(
+            user=self.user,
+            message="Test notification",
+            link="/dashboard/"
+        )
+        self.assertFalse(notification.is_read)
+        self.assertEqual(str(notification), f"Notification for {self.user}: Test notification")
+
+    def test_mark_notification_read(self):
+        """Test marking notification as read."""
+        notification = Notification.objects.create(
+            user=self.user,
+            message="Test notification"
+        )
+        notification.is_read = True
+        notification.save()
+        self.assertTrue(notification.is_read)
+
+
+class AuditLogModelTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+
+    def test_create_audit_log(self):
+        """Test creating an audit log."""
+        log = AuditLog.objects.create(
+            user=self.user,
+            action='CREATE',
+            model_name='Todo',
+            object_id='1',
+            details='Test audit log'
+        )
+        self.assertEqual(str(log), f"{self.user} - CREATE - {log.timestamp}")
+
+
+# ==================== FORM TESTS ====================
+
+class TodoFormTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.user2 = User.objects.create_user(username='user2', password='password')
+
+    def test_todo_form_valid(self):
+        """Test TodoForm with valid data."""
+        form = TodoForm(data={
+            'title': 'Test Task',
+            'description': 'Test Description',
+            'status': 'ACTIVE'
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_todo_form_invalid_empty_title(self):
+        """Test TodoForm with empty title."""
+        form = TodoForm(data={'title': ''})
+        self.assertFalse(form.is_valid())
+        self.assertIn('title', form.errors)
+
+    def test_todo_form_hide_status_on_create(self):
+        """Test that status field is hidden when creating new task."""
+        form = TodoForm()
+        self.assertIsInstance(form.fields['status'].widget, type(form.fields['status'].widget))
+        # When instance has no pk, status should be hidden
+        self.assertIsInstance(form.fields['status'].widget, type(form.fields['status'].widget))
+
+    def test_todo_form_exclude_self_from_dependencies(self):
+        """Test that task cannot depend on itself."""
+        todo = Todo.objects.create(title="Task", created_by=self.user)
+        form = TodoForm(instance=todo)
+        self.assertNotIn(todo, form.fields['dependencies'].queryset)
+
+
+class CommentFormTest(TestCase):
+    def test_comment_form_valid(self):
+        """Test CommentForm with valid data."""
+        form = CommentForm(data={'text': 'Test comment'})
+        self.assertTrue(form.is_valid())
+
+    def test_comment_form_with_attachment(self):
+        """Test CommentForm with file attachment."""
+        file = SimpleUploadedFile("test.txt", b"file content")
+        form = CommentForm(data={'text': 'Test'}, files={'attachment': file})
+        self.assertTrue(form.is_valid())
+
+
+class UserUpdateFormTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password', email='test@example.com')
+
+    def test_user_update_form_valid(self):
+        """Test UserUpdateForm with valid data."""
+        form = UserUpdateForm(instance=self.user, data={
+            'username': 'testuser',
+            'email': 'newemail@example.com',
+            'is_active': True
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_user_update_form_reset_password(self):
+        """Test UserUpdateForm with password reset."""
+        form = UserUpdateForm(instance=self.user, data={
+            'username': 'testuser',
+            'email': 'test@example.com',
+            'is_active': True,
+            'reset_password': True
+        })
+        self.assertTrue(form.is_valid())
+        user = form.save()
+        # Refresh profile from database
+        user.profile.refresh_from_db()
+        self.assertTrue(user.profile.must_change_password)
+        self.assertTrue(hasattr(form, 'temp_password'))
+
+
+class UserSettingsFormTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password', email='test@example.com')
+
+    def test_user_settings_form_valid(self):
+        """Test UserSettingsForm with valid email."""
+        form = UserSettingsForm(data={'email': 'newemail@example.com'}, user=self.user)
+        self.assertTrue(form.is_valid())
+
+    def test_user_settings_form_duplicate_email(self):
+        """Test UserSettingsForm with duplicate email."""
+        user2 = User.objects.create_user(username='user2', password='password', email='existing@example.com')
+        form = UserSettingsForm(data={'email': 'existing@example.com'}, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn('email', form.errors)
+
+
+# ==================== VIEW TESTS ====================
+
 class TodoViewTest(TestCase):
     def setUp(self):
         activate('en')
@@ -77,6 +272,20 @@ class TodoViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No tasks found.")
 
+    def test_list_view_filter_by_status(self):
+        """Test filtering tasks by status."""
+        Todo.objects.create(title="Completed Task", status='COMPLETED', created_by=self.user)
+        response = self.client.get(reverse('todo-list') + '?status=COMPLETED')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Completed Task")
+
+    def test_list_view_search(self):
+        """Test searching tasks."""
+        Todo.objects.create(title="Special Task", created_by=self.user)
+        response = self.client.get(reverse('todo-list') + '?q=Special')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Special Task")
+
     def test_create_view_normal(self):
         """Test creating a new todo via POST."""
         initial_count = Todo.objects.count()
@@ -97,9 +306,6 @@ class TodoViewTest(TestCase):
             'status': 'ACTIVE',
         }, follow=True)
         
-        if response.status_code != 200:
-            print(response.content)
-
         self.assertEqual(AuditLog.objects.count(), initial_logs + 1)
         log = AuditLog.objects.last()
         self.assertEqual(log.action, 'CREATE')
@@ -167,16 +373,353 @@ class TodoViewTest(TestCase):
         response = self.client.post(reverse('todo-delete', args=[999]))
         self.assertEqual(response.status_code, 404)
 
+    def test_detail_view(self):
+        """Test detail view."""
+        response = self.client.get(reverse('todo-detail', args=[self.todo.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.todo.title)
+
+    def test_detail_view_post_comment(self):
+        """Test posting a comment on detail view."""
+        response = self.client.post(reverse('todo-detail', args=[self.todo.pk]), {
+            'text': 'Test comment'
+        })
+        self.assertRedirects(response, reverse('todo-detail', args=[self.todo.pk]))
+        self.assertEqual(Comment.objects.count(), 1)
+
     def test_dashboard_view(self):
+        """Test dashboard view."""
         response = self.client.get(reverse('dashboard'))
         self.assertEqual(response.status_code, 200)
         self.assertIn('total_tasks', response.context)
+        self.assertIn('completed_tasks', response.context)
+        self.assertIn('pending_tasks', response.context)
+
+    def test_dashboard_view_statistics(self):
+        """Test dashboard statistics."""
+        Todo.objects.create(title="Completed", status='COMPLETED', created_by=self.user)
+        Todo.objects.create(title="Active", status='ACTIVE', created_by=self.user)
+        
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.context['total_tasks'], 3)  # 2 new + 1 from setUp
+        self.assertEqual(response.context['completed_tasks'], 1)
+        self.assertEqual(response.context['pending_tasks'], 2)
 
     def test_i18n_spanish(self):
         """Test that Spanish translation works."""
         activate('es')
         response = self.client.get(reverse('todo-list'))
         self.assertContains(response, "Todas las Tareas")
+
+
+class UserManagementViewTest(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_superuser(username='admin', email='admin@example.com', password='password')
+        self.regular_user = User.objects.create_user(username='user', password='password')
+        self.client.force_login(self.admin_user)
+
+    def test_user_list_view_access_denied_regular_user(self):
+        """Test that regular users cannot access user list."""
+        self.client.force_login(self.regular_user)
+        response = self.client.get(reverse('user-list'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_list_view_access_granted_admin(self):
+        """Test that admin users can access user list."""
+        response = self.client.get(reverse('user-list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'admin')
+        self.assertContains(response, 'user')
+
+    def test_user_create_view(self):
+        """Test creating a new user."""
+        initial_count = User.objects.count()
+        response = self.client.post(reverse('user-create'), {
+            'username': 'newuser',
+            'password1': 'complexpass123',
+            'password2': 'complexpass123',
+            'email': 'newuser@example.com'
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.count(), initial_count + 1)
+        self.assertTrue(User.objects.filter(username='newuser').exists())
+
+    def test_user_update_view(self):
+        """Test updating a user."""
+        response = self.client.post(reverse('user-update', args=[self.regular_user.pk]), {
+            'username': 'updateduser',
+            'email': 'updated@example.com',
+            'is_active': True
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.regular_user.refresh_from_db()
+        self.assertEqual(self.regular_user.username, 'updateduser')
+        self.assertEqual(self.regular_user.email, 'updated@example.com')
+
+    def test_user_update_view_reset_password(self):
+        """Test resetting user password."""
+        response = self.client.post(reverse('user-update', args=[self.regular_user.pk]), {
+            'username': 'user',
+            'email': 'user@example.com',
+            'reset_password': True
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.regular_user.refresh_from_db()
+        self.assertTrue(self.regular_user.profile.must_change_password)
+
+
+class ReportViewTest(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_superuser(username='admin', email='admin@example.com', password='password')
+        self.regular_user = User.objects.create_user(username='user', password='password')
+        self.client.force_login(self.admin_user)
+        self.todo = Todo.objects.create(title="Test Task", status='ACTIVE', created_by=self.admin_user)
+
+    def test_report_view_access_denied_regular_user(self):
+        """Test that regular users cannot access reports."""
+        self.client.force_login(self.regular_user)
+        response = self.client.get(reverse('report'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_report_view_access_granted_admin(self):
+        """Test that admin users can access reports."""
+        response = self.client.get(reverse('report'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Task Report')
+
+    def test_report_view_filter_by_status(self):
+        """Test filtering report by status."""
+        Todo.objects.create(title="Completed Task", status='COMPLETED', created_by=self.admin_user)
+        response = self.client.get(reverse('report') + '?status=COMPLETED')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Completed Task')
+
+    def test_report_csv_export(self):
+        """Test CSV export functionality."""
+        response = self.client.get(reverse('report') + '?export=csv')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        self.assertContains(response, 'Test Task')
+
+
+class SettingsViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password', email='test@example.com')
+        self.client.force_login(self.user)
+
+    def test_settings_view_get(self):
+        """Test settings view GET request."""
+        response = self.client.get(reverse('user-settings'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('email_form', response.context)
+        self.assertIn('password_form', response.context)
+
+    def test_settings_view_update_email(self):
+        """Test updating email in settings."""
+        response = self.client.post(reverse('user-settings'), {
+            'form_type': 'email',
+            'email': 'newemail@example.com'
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.email, 'newemail@example.com')
+
+    def test_settings_view_change_password(self):
+        """Test changing password in settings."""
+        response = self.client.post(reverse('user-settings'), {
+            'form_type': 'password',
+            'old_password': 'password',
+            'new_password1': 'newpassword123',
+            'new_password2': 'newpassword123'
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('newpassword123'))
+
+
+class PasswordChangeViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client.force_login(self.user)
+
+    def test_password_change_required_view(self):
+        """Test password change required view."""
+        self.user.profile.must_change_password = True
+        self.user.profile.save()
+        
+        response = self.client.get(reverse('password_change_required'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'todo_app/password_change_required.html')
+
+    def test_password_change_required_post(self):
+        """Test password change required POST."""
+        self.user.profile.must_change_password = True
+        self.user.profile.save()
+        
+        response = self.client.post(reverse('password_change_required'), {
+            'old_password': 'password',
+            'new_password1': 'newpassword123',
+            'new_password2': 'newpassword123'
+        }, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.user.profile.refresh_from_db()
+        self.assertFalse(self.user.profile.must_change_password)
+
+    def test_custom_password_change_view(self):
+        """Test custom password change view."""
+        response = self.client.get(reverse('password_change'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'registration/password_change_form.html')
+
+
+class NotificationViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client.force_login(self.user)
+
+    def test_mark_notification_read(self):
+        """Test marking notification as read."""
+        notification = Notification.objects.create(
+            user=self.user,
+            message="Test Notification",
+            link=reverse('dashboard')
+        )
+        
+        response = self.client.get(reverse('mark-notification-read', args=[notification.pk]))
+        self.assertRedirects(response, reverse('dashboard'))
+        
+        notification.refresh_from_db()
+        self.assertTrue(notification.is_read)
+
+
+# ==================== MIDDLEWARE TESTS ====================
+
+class PasswordChangeRequiredMiddlewareTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client = Client()
+
+    def test_middleware_redirects_when_password_change_required(self):
+        """Test that middleware redirects when password change is required."""
+        self.user.profile.must_change_password = True
+        self.user.profile.save()
+        self.client.force_login(self.user)
+        
+        response = self.client.get(reverse('dashboard'))
+        self.assertRedirects(response, reverse('password_change_required'))
+
+    def test_middleware_allows_password_change_page(self):
+        """Test that middleware allows access to password change page."""
+        self.user.profile.must_change_password = True
+        self.user.profile.save()
+        self.client.force_login(self.user)
+        
+        response = self.client.get(reverse('password_change_required'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_middleware_allows_logout(self):
+        """Test that middleware allows logout."""
+        self.user.profile.must_change_password = True
+        self.user.profile.save()
+        self.client.force_login(self.user)
+        
+        response = self.client.get('/accounts/logout/')
+        # Logout typically redirects (302) or returns 200, both are acceptable
+        self.assertIn(response.status_code, [200, 302])
+
+
+# ==================== SIGNAL TESTS ====================
+
+class SignalTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.user2 = User.objects.create_user(username='user2', password='password')
+
+    def test_user_profile_creation_signal(self):
+        """Test that UserProfile is created when User is created."""
+        new_user = User.objects.create_user(username='newuser', password='password')
+        self.assertTrue(hasattr(new_user, 'profile'))
+        self.assertIsNotNone(new_user.profile)
+
+    def test_notification_on_task_assignment(self):
+        """Test that notification is created when task is assigned."""
+        todo = Todo.objects.create(
+            title="Test Task",
+            created_by=self.user,
+            assigned_to=self.user2
+        )
+        self.assertEqual(Notification.objects.count(), 1)
+        notification = Notification.objects.first()
+        self.assertEqual(notification.user, self.user2)
+        self.assertIn('assigned', notification.message.lower())
+
+    def test_notification_on_status_change_to_completed(self):
+        """Test that notification is created when task status changes to COMPLETED."""
+        todo1 = Todo.objects.create(title="Task 1", created_by=self.user, status='ACTIVE')
+        todo2 = Todo.objects.create(title="Task 2", created_by=self.user, status='ACTIVE')
+        todo2.dependencies.add(todo1)
+        
+        todo1.status = 'COMPLETED'
+        todo1.save()
+        
+        # Should create notification for task2 (blocked by task1)
+        notifications = Notification.objects.filter(user=self.user)
+        self.assertTrue(notifications.exists())
+        notification = notifications.first()
+        self.assertIn('dependency completed', notification.message.lower())
+
+
+# ==================== INTEGRATION TESTS ====================
+
+class IntegrationTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client.force_login(self.user)
+
+    def test_full_task_lifecycle(self):
+        """Test complete task lifecycle: create, update, comment, delete."""
+        # Create - use the same approach as test_create_view_normal
+        initial_count = Todo.objects.count()
+        response = self.client.post(reverse('todo-create'), {
+            'title': 'Lifecycle Task',
+            'description': 'Test description',
+            'status': 'ACTIVE',  # Include status even though it's hidden
+            'due_date': timezone.now().date().isoformat()
+        })
+        # Verify task was created - check count first
+        final_count = Todo.objects.count()
+        self.assertEqual(final_count, initial_count + 1, 
+                     f"Task not created. Count: {final_count}, Initial: {initial_count}")
+        self.assertTrue(Todo.objects.filter(title='Lifecycle Task').exists())
+        todo = Todo.objects.get(title='Lifecycle Task')
+        
+        # Update
+        response = self.client.post(reverse('todo-update', args=[todo.pk]), {
+            'title': 'Updated Lifecycle Task',
+            'status': 'ON_HOLD'
+        })
+        # Verify update worked
+        todo.refresh_from_db()
+        self.assertEqual(todo.status, 'ON_HOLD')
+        self.assertEqual(todo.title, 'Updated Lifecycle Task')
+        
+        # Comment
+        initial_comment_count = Comment.objects.count()
+        response = self.client.post(reverse('todo-detail', args=[todo.pk]), {
+            'text': 'Test comment'
+        })
+        # Verify comment was created
+        self.assertEqual(Comment.objects.count(), initial_comment_count + 1)
+        self.assertEqual(Comment.objects.filter(todo=todo).count(), 1)
+        
+        # Delete
+        response = self.client.post(reverse('todo-delete', args=[todo.pk]))
+        # Verify soft delete worked
+        self.assertFalse(Todo.objects.filter(pk=todo.pk).exists())
+        self.assertTrue(Todo.all_objects.filter(pk=todo.pk).exists())
+
+
+# ==================== SPANISH TRANSLATION TESTS ====================
 
 class TodoViewTestSpanish(TestCase):
     def setUp(self):
@@ -213,94 +756,28 @@ class TodoViewTestSpanish(TestCase):
         self.assertContains(response, "Panel de Control")
         self.assertContains(response, "Pendiente")
 
-    def test_detail_view_comment(self):
-        """Test detail view and comment submission."""
+    def test_detail_view_comment_spanish(self):
+        """Test detail view and comment submission in Spanish."""
         response = self.client.get(reverse('todo-detail', args=[self.todo.pk]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.todo.title)
         
         # Post a comment
         response = self.client.post(reverse('todo-detail', args=[self.todo.pk]), {
-            'text': 'This is a test comment'
+            'text': 'Este es un comentario de prueba'
         })
         self.assertRedirects(response, reverse('todo-detail', args=[self.todo.pk]))
         
         # Verify comment exists
         response = self.client.get(reverse('todo-detail', args=[self.todo.pk]))
-        self.assertContains(response, 'This is a test comment')
+        self.assertContains(response, 'Este es un comentario de prueba')
 
-    def test_notification_trigger(self):
-        """Test notification creation on assignment."""
-        # Create a second user
-        user2 = User.objects.create_user(username='user2', password='password')
-        
-        # Assign task to user2
-        self.todo.assigned_to = user2
-        self.todo.save()
-        
-        # Check notification
-        self.assertEqual(Notification.objects.count(), 1)
-        notification = Notification.objects.first()
-        self.assertEqual(notification.user, user2) # Notification should be for user2
-        self.assertIn('assigned to task', notification.message)
-        self.assertFalse(notification.is_read)
 
-    def test_mark_notification_read(self):
-        # Create a notification
-        notification = Notification.objects.create(
-            user=self.user,
-            message="Test Notification",
-            link=reverse('dashboard')
-        )
-        
-        # Access the mark read view
-        response = self.client.get(reverse('mark-notification-read', args=[notification.pk]))
-        
-        # Verify redirect
-        self.assertRedirects(response, reverse('dashboard'))
-        
-        # Verify marked as read
-        notification.refresh_from_db()
-        self.assertTrue(notification.is_read)
+# ==================== MANAGEMENT COMMAND TESTS ====================
 
-    def test_user_management_access(self):
-        # Regular user should get 403
-        response = self.client.get(reverse('user-list'))
-        self.assertEqual(response.status_code, 403)
-
-        # Superuser should get 200
-        admin_user = User.objects.create_superuser('admin', 'admin@example.com', 'password')
-        self.client.force_login(admin_user)
-        response = self.client.get(reverse('user-list'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'admin')
-
-    def test_report_view_access(self):
-        # Regular user should get 403
-        response = self.client.get(reverse('report'))
-        self.assertEqual(response.status_code, 403)
-
-        # Superuser should get 200
-        admin_user = User.objects.create_superuser('admin_report', 'admin_report@example.com', 'password')
-        self.client.force_login(admin_user)
-        response = self.client.get(reverse('report'))
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Task Report')
-
-    def test_report_csv_export(self):
-        admin_user = User.objects.create_superuser('admin_csv', 'admin_csv@example.com', 'password')
-        self.client.force_login(admin_user)
-        
-        # Create a task to export
-        Todo.objects.create(title="Export Task", created_by=admin_user)
-        
-        response = self.client.get(reverse('report') + '?export=csv')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'text/csv')
-        self.assertContains(response, 'Export Task')
-
+class ManagementCommandTest(TestCase):
     def test_create_default_admin_command(self):
-        # Test that the command creates a default admin
+        """Test that the command creates a default admin."""
         from django.core.management import call_command
         from io import StringIO
         

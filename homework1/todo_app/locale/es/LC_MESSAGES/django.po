@@ -34,7 +34,7 @@ msgid "Dependencies"
 msgstr "Dependencias"
 
 msgid "Assigned To"
-msgstr "Asignado A"
+msgstr "Asignado a"
 
 #, fuzzy
 #| msgid "Add a Comment"
@@ -157,37 +157,31 @@ msgid "New Task"
 msgstr "Nueva Tarea"
 
 msgid "Admin"
-msgstr ""
+msgstr "Administrador"
 
-#, fuzzy
-#| msgid "User"
 msgid "Users"
-msgstr "Usuario"
+msgstr "Usuarios"
 
-#, fuzzy
-#| msgid "Task Report"
 msgid "Reports"
-msgstr "Reporte de Tareas"
+msgstr "Reportes"
 
 msgid "unread messages"
 msgstr "mensajes no leídos"
 
-#, fuzzy
-#| msgid "Actions"
 msgid "Notifications"
-msgstr "Acciones"
+msgstr "Notificaciones"
 
 msgid "ago"
 msgstr "hace"
 
 msgid "No new notifications"
-msgstr ""
+msgstr "No hay notificaciones nuevas"
 
 msgid "Guest"
 msgstr "Invitado"
 
 msgid "Logged in as"
-msgstr ""
+msgstr "Conectado como"
 
 msgid "Settings"
 msgstr "Configuración"
@@ -210,16 +204,14 @@ msgstr "Tareas Creadas por Fecha"
 msgid "Last 30 days"
 msgstr "Últimos 30 días"
 
-#, fuzzy
-#| msgid "Task Status Overview"
 msgid "Tasks by Status per Month"
-msgstr "Resumen de Estado de Tareas"
+msgstr "Tareas por Estado por Mes"
 
 msgid "Last 6 months"
 msgstr "Últimos 6 meses"
 
 msgid "Completed Tasks by User"
-msgstr ""
+msgstr "Tareas Completadas por Usuario"
 
 msgid "Overdue Tasks"
 msgstr "Tareas Vencidas"
@@ -233,8 +225,6 @@ msgstr "No hay tareas próximas"
 msgid "Tasks Created"
 msgstr "Tareas Creadas"
 
-#, fuzzy
-#| msgid "Completed"
 msgid "Completed Tasks"
 msgstr "Completada"
 

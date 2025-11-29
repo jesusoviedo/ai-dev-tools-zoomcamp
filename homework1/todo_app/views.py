@@ -2,7 +2,8 @@ from django.urls import reverse_lazy, reverse
 from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView, View
 from django.db.models import Count, Q
-from django.db.models.functions import TruncDate
+from django.db.models.functions import TruncDate, TruncMonth
+from django.db import connection
 from collections import defaultdict
 import json
 from django.utils import timezone
@@ -14,7 +15,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy as _, gettext
 from django.contrib import messages
 from .models import Todo, AuditLog, Notification
 from .forms import TodoForm, CommentForm, UserUpdateForm, UserSettingsForm
@@ -29,7 +30,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Statistics (using new status field)
         context['total_tasks'] = Todo.objects.count()
         context['completed_tasks'] = Todo.objects.filter(status='COMPLETED').count()
-        context['pending_tasks'] = Todo.objects.filter(status__in=['ACTIVE', 'ON_HOLD', 'BLOCKED']).count()
+        context['pending_tasks'] = Todo.objects.filter(status__in=['ACTIVE', 'ON_HOLD']).count()
+        context['blocked_tasks'] = Todo.objects.filter(status='BLOCKED').count()
         
         # Upcoming tasks (active/pending, ordered by due date)
         context['upcoming_tasks'] = Todo.objects.filter(
@@ -44,8 +46,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         ).order_by('due_date')
         
         # Tasks by creation date (last 30 days)
-        from datetime import timedelta
+        from datetime import timedelta, date
         thirty_days_ago = now - timedelta(days=30)
+        
+        # Get all tasks created in last 30 days, group by date
         tasks_by_date = Todo.objects.filter(
             created_at__gte=thirty_days_ago
         ).extra(
@@ -54,18 +58,42 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             count=Count('id')
         ).order_by('date')
         
-        context['tasks_by_date_labels'] = json.dumps([str(item['date']) for item in tasks_by_date])
-        context['tasks_by_date_data'] = json.dumps([item['count'] for item in tasks_by_date])
+        # Ensure we have data even if empty
+        if not tasks_by_date:
+            # If no tasks, show at least today's date with 0
+            today = date.today()
+            context['tasks_by_date_labels'] = json.dumps([str(today)])
+            context['tasks_by_date_data'] = json.dumps([0])
+        else:
+            context['tasks_by_date_labels'] = json.dumps([str(item['date']) for item in tasks_by_date])
+            context['tasks_by_date_data'] = json.dumps([item['count'] for item in tasks_by_date])
         
         # Tasks by status per month (last 6 months)
         six_months_ago = now - timedelta(days=180)
-        tasks_by_month_status = Todo.objects.filter(
-            created_at__gte=six_months_ago
-        ).extra(
-            select={'month': "strftime('%%Y-%%m', created_at)"}
-        ).values('month', 'status').annotate(
-            count=Count('id')
-        ).order_by('month')
+        
+        # Use database-agnostic approach
+        if connection.vendor == 'sqlite':
+            tasks_by_month_status = Todo.objects.filter(
+                created_at__gte=six_months_ago
+            ).extra(
+                select={'month': "strftime('%%Y-%%m', created_at)"}
+            ).values('month', 'status').annotate(
+                count=Count('id')
+            ).order_by('month')
+        else:
+            # For PostgreSQL, MySQL, etc.
+            tasks_by_month_status = Todo.objects.filter(
+                created_at__gte=six_months_ago
+            ).annotate(
+                month=TruncMonth('created_at')
+            ).values('month', 'status').annotate(
+                count=Count('id')
+            ).order_by('month')
+            # Format month as YYYY-MM
+            tasks_by_month_status = [
+                {**item, 'month': item['month'].strftime('%Y-%m') if hasattr(item['month'], 'strftime') else str(item['month'])[:7]}
+                for item in tasks_by_month_status
+            ]
         
         # Organize by month and status
         monthly_data = defaultdict(lambda: {'ACTIVE': 0, 'COMPLETED': 0, 'ON_HOLD': 0, 'BLOCKED': 0})
@@ -73,6 +101,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             monthly_data[item['month']][item['status']] = item['count']
         
         monthly_labels = sorted(monthly_data.keys())
+        
+        # Ensure we have at least one month if empty
+        if not monthly_labels:
+            current_month = now.strftime('%Y-%m')
+            monthly_labels = [current_month]
+            monthly_data[current_month] = {'ACTIVE': 0, 'COMPLETED': 0, 'ON_HOLD': 0, 'BLOCKED': 0}
+        
         context['monthly_labels'] = json.dumps(monthly_labels)
         context['monthly_active'] = json.dumps([monthly_data[month]['ACTIVE'] for month in monthly_labels])
         context['monthly_completed'] = json.dumps([monthly_data[month]['COMPLETED'] for month in monthly_labels])
@@ -87,8 +122,24 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             count=Count('id')
         ).order_by('-count')[:10]
         
-        context['user_labels'] = json.dumps([item['assigned_to__username'] for item in tasks_by_user])
-        context['user_data'] = json.dumps([item['count'] for item in tasks_by_user])
+        # Ensure we have data even if empty
+        if tasks_by_user:
+            context['user_labels'] = json.dumps([item['assigned_to__username'] for item in tasks_by_user])
+            context['user_data'] = json.dumps([item['count'] for item in tasks_by_user])
+        else:
+            context['user_labels'] = json.dumps([])
+            context['user_data'] = json.dumps([])
+        
+        # Add translated labels for JavaScript (as JSON string)
+        context['chart_labels'] = json.dumps({
+            'completed': gettext('Completed'),
+            'pending': gettext('Pending'),
+            'active': gettext('Active'),
+            'on_hold': gettext('On Hold'),
+            'blocked': gettext('Blocked'),
+            'tasks_created': gettext('Tasks Created'),
+            'completed_tasks': gettext('Completed Tasks'),
+        })
 
         return context
 
