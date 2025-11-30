@@ -98,7 +98,7 @@ msgstr ""
 msgid "You've been logged out"
 msgstr ""
 
-msgid "Thanks for using TaskMaster"
+msgid "Thanks for using TaskFlow"
 msgstr ""
 
 msgid "Log in again"
@@ -144,8 +144,8 @@ msgstr "Cerrar"
 msgid "Cancel"
 msgstr "Cancelar"
 
-msgid "TaskMaster Dashboard"
-msgstr "Panel de Control TaskMaster"
+msgid "TaskFlow Dashboard"
+msgstr "Panel de Control TaskFlow"
 
 msgid "Dashboard"
 msgstr "Panel de Control"
