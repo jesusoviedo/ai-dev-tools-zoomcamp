@@ -29,9 +29,10 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
     && curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    mv /root/.cargo/bin/uv /usr/local/bin/uv && \
+    # El instalador de uv instala en /root/.local/bin, no en /root/.cargo/bin
+    mv /root/.local/bin/uv /usr/local/bin/uv && \
     chmod +x /usr/local/bin/uv && \
-    rm -rf /root/.cargo && \
+    rm -rf /root/.local && \
     # Eliminar curl después de instalar uv (ya no se necesita)
     apt-get purge -y curl && \
     apt-get autoremove -y && \
