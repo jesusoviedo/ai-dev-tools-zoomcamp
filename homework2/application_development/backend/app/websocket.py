@@ -228,3 +228,4 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
             room_id, user_id, username = disconnect_data
             await manager.broadcast_user_left(room_id, user_id)
 
+
