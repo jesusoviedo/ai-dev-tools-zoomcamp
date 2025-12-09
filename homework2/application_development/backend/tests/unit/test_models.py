@@ -1,7 +1,7 @@
 """Unit tests for Pydantic models."""
 
 import pytest
-from datetime import datetime
+from datetime import UTC, datetime
 from pydantic import ValidationError
 from app.models import (
     HealthResponse,
@@ -72,7 +72,7 @@ class TestSessionResponse:
     
     def test_session_response_all_fields(self):
         """Test SessionResponse with all required fields."""
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(UTC)
         response = SessionResponse(
             session_id="test-session-123",
             room_id="room-test-session-123",
@@ -92,7 +92,7 @@ class TestSessionResponse:
     
     def test_session_response_optional_title(self):
         """Test SessionResponse with optional title."""
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(UTC)
         response = SessionResponse(
             session_id="test-session-123",
             room_id="room-test-session-123",
@@ -106,7 +106,7 @@ class TestSessionResponse:
     
     def test_session_response_default_active_users(self):
         """Test SessionResponse with default active_users."""
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(UTC)
         response = SessionResponse(
             session_id="test-session-123",
             room_id="room-test-session-123",
@@ -119,7 +119,7 @@ class TestSessionResponse:
     
     def test_session_response_negative_active_users(self):
         """Test SessionResponse rejects negative active_users."""
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(UTC)
         with pytest.raises(ValidationError):
             SessionResponse(
                 session_id="test-session-123",
