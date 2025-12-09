@@ -68,6 +68,8 @@ test_*.py
 
 # Development files
 backend/pytest.ini
-frontend/vite.config.ts
-frontend/tsconfig.json
+# frontend/vite.config.ts, frontend/tsconfig.json y frontend/tsconfig.node.json son necesarios para el build
+# frontend/vite.config.ts
+# frontend/tsconfig.json
+# frontend/tsconfig.node.json
 

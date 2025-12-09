@@ -3,7 +3,7 @@
 # ============================================
 # Stage 1: Build del Frontend (Node.js)
 # ============================================
-FROM node:20-slim AS frontend-builder
+FROM node:24-slim AS frontend-builder
 
 WORKDIR /app/frontend
 
