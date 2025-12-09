@@ -48,7 +48,8 @@ async def websocket_route(websocket: WebSocket, room_id: str):
 
 # Montar archivos estáticos del frontend AL FINAL (baja prioridad)
 # Esto permite que las rutas /api y /ws tengan prioridad
-static_dir = Path(__file__).parent.parent / "static"
+# En Docker, main.py está en /app/main.py y static está en /app/static
+static_dir = Path(__file__).parent / "static"
 
 if static_dir.exists():
     # Montar archivos estáticos en la ruta raíz

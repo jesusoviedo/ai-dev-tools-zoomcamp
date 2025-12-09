@@ -26,11 +26,11 @@ describe('CodeEditor', () => {
     vi.restoreAllMocks()
   })
 
-  it('should render with default language (javascript)', () => {
+  it('should render with default language (empty)', () => {
     render(<CodeEditor value="" onChange={mockOnChange} />)
     
     const languageSelector = screen.getByLabelText(/lenguaje/i) as HTMLSelectElement
-    expect(languageSelector.value).toBe('javascript')
+    expect(languageSelector.value).toBe('')
   })
 
   it('should render with specified language', () => {
@@ -40,15 +40,16 @@ describe('CodeEditor', () => {
     expect(languageSelector.value).toBe('python')
   })
 
-  it('should render language selector with all options', () => {
+  it('should render language selector with all options including empty', () => {
     render(<CodeEditor value="" onChange={mockOnChange} />)
     
     const languageSelector = screen.getByLabelText(/lenguaje/i) as HTMLSelectElement
     const options = Array.from(languageSelector.options).map(opt => opt.value)
     
+    expect(options).toContain('')
     expect(options).toContain('javascript')
     expect(options).toContain('python')
-    expect(options).toHaveLength(2)
+    expect(options).toHaveLength(3)
   })
 
   it('should call onChange when code changes', async () => {
@@ -117,7 +118,7 @@ describe('CodeEditor', () => {
   it('should have correct label for language selector', () => {
     render(<CodeEditor value="" onChange={mockOnChange} />)
     
-    const label = screen.getByText(/lenguaje/i)
+    const label = screen.getByText('Lenguaje:', { selector: 'label' })
     expect(label).toBeInTheDocument()
     expect(label.tagName).toBe('LABEL')
   })
@@ -125,7 +126,7 @@ describe('CodeEditor', () => {
   it('should have correct id and htmlFor relationship', () => {
     render(<CodeEditor value="" onChange={mockOnChange} />)
     
-    const label = screen.getByText(/lenguaje/i)
+    const label = screen.getByText('Lenguaje:', { selector: 'label' })
     const selector = screen.getByLabelText(/lenguaje/i)
     
     expect(label.getAttribute('for')).toBe('language-selector')

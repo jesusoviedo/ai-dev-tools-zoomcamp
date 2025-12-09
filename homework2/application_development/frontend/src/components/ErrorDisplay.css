@@ -1,0 +1,106 @@
+.error-display {
+  background: linear-gradient(135deg, rgba(244, 135, 113, 0.1) 0%, rgba(244, 135, 113, 0.05) 100%);
+  border: 1px solid rgba(244, 135, 113, 0.3);
+  border-left: 4px solid #f48771;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.error-icon {
+  width: 24px;
+  height: 24px;
+  color: #f48771;
+  flex-shrink: 0;
+}
+
+.error-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.error-type {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f48771;
+  font-family: 'Courier New', monospace;
+}
+
+.error-language {
+  font-size: 11px;
+  font-weight: 500;
+  color: #888888;
+  background-color: rgba(136, 136, 136, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.error-message {
+  color: #d4d4d4;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  font-family: 'Courier New', monospace;
+  word-break: break-word;
+}
+
+.error-details {
+  margin-top: 12px;
+  border-top: 1px solid rgba(244, 135, 113, 0.2);
+  padding-top: 12px;
+}
+
+.error-details-summary {
+  color: #888888;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+  font-weight: 500;
+}
+
+.error-details-summary:hover {
+  color: #f48771;
+}
+
+.error-details-summary::marker {
+  color: #f48771;
+}
+
+.error-details-content {
+  margin-top: 8px;
+  padding: 12px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  color: #f48771;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-x: auto;
+}
+

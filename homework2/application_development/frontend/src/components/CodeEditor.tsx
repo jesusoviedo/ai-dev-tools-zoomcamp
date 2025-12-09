@@ -5,7 +5,7 @@ import { python } from '@codemirror/lang-python'
 import { oneDark } from '@codemirror/theme-one-dark'
 import './CodeEditor.css'
 
-export type SupportedLanguage = 'javascript' | 'python'
+export type SupportedLanguage = 'javascript' | 'python' | ''
 
 interface CodeEditorProps {
   value: string
@@ -14,22 +14,36 @@ interface CodeEditorProps {
   onLanguageChange?: (language: SupportedLanguage) => void
 }
 
-const languageOptions: { value: SupportedLanguage; label: string }[] = [
-  { value: 'javascript', label: 'JavaScript' },
-  { value: 'python', label: 'Python' },
+const languageOptions: { 
+  value: SupportedLanguage
+  label: string
+}[] = [
+  { 
+    value: '', 
+    label: 'Selecciona un lenguaje'
+  },
+  { 
+    value: 'javascript', 
+    label: 'JavaScript'
+  },
+  { 
+    value: 'python', 
+    label: 'Python'
+  },
 ]
 
 export default function CodeEditor({ 
   value, 
   onChange, 
-  language: initialLanguage = 'javascript',
+  language: initialLanguage = '',
   onLanguageChange 
 }: CodeEditorProps) {
-  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(initialLanguage)
+  // La opción vacía es la predeterminada
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(initialLanguage || '')
   
   // Sincronizar con prop language si cambia externamente
   useEffect(() => {
-    setSelectedLanguage(initialLanguage)
+    setSelectedLanguage(initialLanguage || '')
   }, [initialLanguage])
 
   const extensions = useMemo(() => {
@@ -55,18 +69,21 @@ export default function CodeEditor({
         <label htmlFor="language-selector" className="language-label">
           Lenguaje:
         </label>
-        <select
-          id="language-selector"
-          className="language-selector"
-          value={selectedLanguage}
-          onChange={handleLanguageChange}
-        >
-          {languageOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+        <div className="language-selector-wrapper">
+          <select
+            id="language-selector"
+            className="language-selector"
+            value={selectedLanguage}
+            onChange={handleLanguageChange}
+            required
+          >
+            {languageOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <CodeMirror
         value={value}

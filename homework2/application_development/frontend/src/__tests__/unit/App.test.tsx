@@ -61,17 +61,18 @@ describe('App', () => {
     render(<App />)
     const languageSelector = screen.getByLabelText(/lenguaje/i) as HTMLSelectElement
     
-    expect(languageSelector.value).toBe('javascript')
+    expect(languageSelector.value).toBe('')
     
     await user.selectOptions(languageSelector, 'python')
     expect(languageSelector.value).toBe('python')
   })
 
-  it('should have language options available', () => {
+  it('should have language options available including empty', () => {
     render(<App />)
     const languageSelector = screen.getByLabelText(/lenguaje/i) as HTMLSelectElement
     
     const options = Array.from(languageSelector.options).map(opt => opt.value)
+    expect(options).toContain('')
     expect(options).toContain('javascript')
     expect(options).toContain('python')
   })

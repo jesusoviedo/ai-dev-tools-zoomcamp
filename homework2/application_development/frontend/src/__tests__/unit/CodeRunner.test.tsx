@@ -61,7 +61,7 @@ describe('CodeRunner', () => {
 
     render(<CodeRunner code="print('Hello, World!')" language="python" />)
     
-    expect(screen.getByText('Salida:')).toBeInTheDocument()
+    expect(screen.getByText('Salida')).toBeInTheDocument()
     expect(screen.getByText('Hello, World!')).toBeInTheDocument()
   })
 
@@ -73,8 +73,9 @@ describe('CodeRunner', () => {
 
     render(<CodeRunner code="invalid python code" language="python" />)
     
-    expect(screen.getByText('Error:')).toBeInTheDocument()
-    expect(screen.getByText(/SyntaxError/i)).toBeInTheDocument()
+    expect(screen.getByText('Error de Ejecución')).toBeInTheDocument()
+    // Ahora hay múltiples elementos con SyntaxError (tipo y mensaje), verificamos que existe
+    expect(screen.getAllByText(/SyntaxError/i).length).toBeGreaterThan(0)
   })
 
   it('should show clear button when there is output', () => {
