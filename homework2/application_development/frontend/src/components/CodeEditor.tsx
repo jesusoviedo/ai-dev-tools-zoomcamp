@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
 import { python } from '@codemirror/lang-python'
@@ -11,6 +11,7 @@ interface CodeEditorProps {
   value: string
   onChange: (value: string) => void
   language?: SupportedLanguage
+  onLanguageChange?: (language: SupportedLanguage) => void
 }
 
 const languageOptions: { value: SupportedLanguage; label: string }[] = [
@@ -18,8 +19,18 @@ const languageOptions: { value: SupportedLanguage; label: string }[] = [
   { value: 'python', label: 'Python' },
 ]
 
-export default function CodeEditor({ value, onChange, language: initialLanguage = 'javascript' }: CodeEditorProps) {
+export default function CodeEditor({ 
+  value, 
+  onChange, 
+  language: initialLanguage = 'javascript',
+  onLanguageChange 
+}: CodeEditorProps) {
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(initialLanguage)
+  
+  // Sincronizar con prop language si cambia externamente
+  useEffect(() => {
+    setSelectedLanguage(initialLanguage)
+  }, [initialLanguage])
 
   const extensions = useMemo(() => {
     switch (selectedLanguage) {
@@ -35,6 +46,7 @@ export default function CodeEditor({ value, onChange, language: initialLanguage 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = e.target.value as SupportedLanguage
     setSelectedLanguage(newLanguage)
+    onLanguageChange?.(newLanguage)
   }
 
   return (
