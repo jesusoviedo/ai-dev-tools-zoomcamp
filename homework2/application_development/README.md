@@ -217,6 +217,7 @@ npm test
 npm run test:unit
 
 # Ejecutar pruebas con cobertura
+[ -d "coverage" ] && rm -rf coverage
 npm run test:coverage
 ```
 
