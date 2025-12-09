@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import CodeEditor, { SupportedLanguage } from '../../components/CodeEditor'
 
@@ -143,6 +143,31 @@ describe('CodeEditor', () => {
     // El componente debería renderizar sin errores
     const languageSelector = screen.getByLabelText(/lenguaje/i)
     expect(languageSelector).toBeInTheDocument()
+  })
+
+  it('should prevent language change when language is locked', () => {
+    const onLanguageChangeAttempt = vi.fn()
+    render(
+      <CodeEditor 
+        value="" 
+        onChange={mockOnChange} 
+        language="python" 
+        isLanguageLocked={true}
+        onLanguageChangeAttempt={onLanguageChangeAttempt}
+      />
+    )
+    
+    const languageSelector = screen.getByLabelText(/lenguaje/i) as HTMLSelectElement
+    expect(languageSelector.value).toBe('python')
+    
+    // Simular el evento change directamente
+    fireEvent.change(languageSelector, { target: { value: 'javascript' } })
+    
+    // Verificar que el callback fue llamado
+    expect(onLanguageChangeAttempt).toHaveBeenCalled()
+    
+    // El selector debería mantenerse en python después del preventDefault
+    expect(languageSelector.value).toBe('python')
   })
 })
 

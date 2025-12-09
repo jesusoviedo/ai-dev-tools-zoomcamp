@@ -38,6 +38,37 @@
   display: flex;
   align-items: center;
   min-width: 160px;
+  gap: 8px;
+}
+
+.language-selector.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #1e1e1e;
+}
+
+.language-locked-icon {
+  color: #888888;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.language-locked-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: rgba(255, 165, 0, 0.1);
+  border: 1px solid rgba(255, 165, 0, 0.3);
+  border-radius: 6px;
+  color: #ffa500;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.language-locked-notice svg {
+  flex-shrink: 0;
 }
 
 .language-selector {
