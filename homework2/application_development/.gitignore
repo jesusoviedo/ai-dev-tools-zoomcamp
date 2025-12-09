@@ -26,9 +26,9 @@ htmlcov/
 # Node related
 node_modules/
 npm-debug.log*
+# yarn.lock y pnpm-lock.yaml solo se ignoran si no usas esos gestores
 yarn.lock
 pnpm-lock.yaml
-package-lock.json
 
 # Build output - React/Vite
 dist/
