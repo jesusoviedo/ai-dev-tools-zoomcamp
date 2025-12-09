@@ -23,7 +23,28 @@ Plataforma de entrevistas de código online con colaboración en tiempo real des
 
 ## 🚀 Instalación
 
-### Backend
+### Instalación completa (recomendado)
+
+Desde la raíz del proyecto (`application_development`):
+
+```bash
+# 1. Instalar dependencias del backend
+cd backend
+uv venv && uv sync
+cd ..
+
+# 2. Instalar dependencias del frontend
+cd frontend
+./install.sh
+cd ..
+
+# 3. Instalar dependencias para ejecutar ambos servicios simultáneamente
+npm install
+```
+
+### Instalación por separado
+
+#### Backend
 
 ```bash
 cd backend
@@ -31,7 +52,7 @@ cd backend
 uv venv && uv sync
 ```
 
-### Frontend
+#### Frontend
 
 **Opción 1: Script automático (recomendado)**
 ```bash
@@ -62,9 +83,23 @@ npm install
 
 Desde la raíz del proyecto (`application_development`):
 
+**Primera vez (instalar dependencias):**
+```bash
+npm install
+```
+
+**Ejecutar ambos servicios:**
 ```bash
 npm run dev
 ```
+
+Este comando ejecuta automáticamente:
+- **Backend:** `uv run uvicorn main:app --reload --port 8000` (puerto 8000)
+- **Frontend:** `npm run dev` (puerto 5173 por defecto de Vite)
+
+Los logs de cada servicio se muestran con colores distintos para facilitar la identificación:
+- `[BACKEND]` en azul
+- `[FRONTEND]` en magenta
 
 ### Ejecutar por separado
 
