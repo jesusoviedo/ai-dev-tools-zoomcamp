@@ -9,6 +9,7 @@ venv/
 
 # VSCode settings
 .vscode/
+!.vscode/extensions.json
 
 # Environment variables
 .env
@@ -20,18 +21,21 @@ venv/
 # Test and coverage files
 .coverage
 htmlcov/
+coverage/
 *.log
-
 
 # Node related
 node_modules/
 npm-debug.log*
-# yarn.lock y pnpm-lock.yaml solo se ignoran si no usas esos gestores
-yarn.lock
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 pnpm-lock.yaml
+lerna-debug.log*
 
 # Build output - React/Vite
 dist/
+dist-ssr
 build/
 
 # Local database files
@@ -41,11 +45,15 @@ build/
 # IDEs and editors
 .idea/
 *.swp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # Misc
 *.local
 
-# Optional: ignore frontend/.env if exists
+# Project-specific
 frontend/.env
 backend/.env
-
