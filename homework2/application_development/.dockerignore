@@ -1,0 +1,73 @@
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/.venv/
+backend/venv/
+backend/env/
+backend/.env
+
+# Build outputs
+frontend/dist/
+frontend/build/
+backend/dist/
+backend/build/
+
+# Testing
+backend/htmlcov/
+backend/.pytest_cache/
+backend/.coverage
+frontend/coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Lock files (se copian explícitamente en Dockerfile)
+# package-lock.json
+# uv.lock
+
+# Test files
+backend/tests/
+frontend/src/__tests__/
+*.test.ts
+*.test.tsx
+*.test.js
+*.test.jsx
+test_*.py
+
+# Development files
+backend/pytest.ini
+frontend/vite.config.ts
+frontend/tsconfig.json
+

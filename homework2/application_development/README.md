@@ -131,6 +131,45 @@ nvm use  # Cargar la versión de Node.js especificada en .nvmrc
 npm run build
 ```
 
+## 🐳 Docker
+
+La aplicación puede ser dockerizada en un único contenedor usando Multi-stage Build.
+
+### Requisitos
+
+- Docker instalado y funcionando
+
+### Build de la imagen Docker
+
+Desde la raíz del proyecto (`application_development`):
+
+```bash
+docker build -t coding-interview-platform .
+```
+
+### Ejecutar el contenedor
+
+```bash
+docker run -p 8000:8000 coding-interview-platform
+```
+
+### Acceder a la aplicación dockerizada
+
+Una vez que el contenedor esté ejecutándose:
+
+- **Aplicación completa**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+### Detalles técnicos
+
+- **Multi-stage Build**: 
+  - Stage 1: Build del frontend con Node.js 20
+  - Stage 2: Runtime del backend con Python 3.13-slim
+- **Imagen base final**: `python:3.13-slim`
+- El frontend se construye y se sirve como archivos estáticos desde FastAPI
+- Las rutas `/api` y `/ws` tienen prioridad sobre los archivos estáticos
+
 ## 🧪 Testing
 
 El proyecto incluye una estrategia completa de pruebas separando pruebas unitarias de integración.

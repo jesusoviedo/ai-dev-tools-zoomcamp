@@ -149,3 +149,37 @@ Dime qué librería/script debo agregar y proporciona el código actualizado par
 
 ### Prompt 6:
 
+**Rol:** Actúa como un Ingeniero DevOps Senior experto en Docker.
+
+**Objetivo:** "Dockerizar" la aplicación completa (Frontend + Backend) en un **único contenedor** para facilitar el despliegue.
+
+**Estrategia Técnica:**
+Utiliza un **Multi-stage Build** en el `Dockerfile` para mantener la imagen final ligera.
+
+**Pasos requeridos en el Dockerfile:**
+
+1.  **Stage 1: Build del Frontend (Node.js)**
+ - Usa una imagen base de `node`.
+ - Copia el `package.json` e instala dependencias.
+ - Ejecuta el script de build (`npm run build`) para generar la carpeta de archivos estáticos (usualmente `dist` o `build`).
+2.  **Stage 2: Runtime del Backend (Python)**
+ - Usa una imagen base ligera de Python (ej: `python:3.11-slim`).
+ - Define el directorio de trabajo (ej: `/app`).
+ - Instala **`uv`** y utilízalo para instalar las dependencias del backend (`pyproject.toml` o `requirements.txt`).
+ - **Copiar Artefactos:** Copia la carpeta de archivos estáticos generada en el "Stage 1" dentro de una carpeta en el contenedor (ej: `/app/static`).
+
+**Cambios en el Código (Backend):**
+
+- Necesito que modifiques el archivo `main.py` de FastAPI.
+- Configúralo para servir los archivos estáticos copiados (HTML/CSS/JS) en la ruta raíz `/` usando `StaticFiles`.
+- Asegúrate de que las rutas de la API (`/api`, `/ws`) sigan funcionando y tengan prioridad sobre los archivos estáticos.
+
+**Entregable:**
+
+- El código completo del `Dockerfile`.
+- El código modificado de `main.py`.
+- Dime explícitamente **cuál es la imagen base** que has elegido para el paso final (Python), ya que necesito este dato para responder una pregunta.
+  
+---
+
+### Prompt 7:
