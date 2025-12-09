@@ -100,11 +100,27 @@ uv run pytest tests/unit/ -v
 # Ejecutar solo pruebas de integración
 uv run pytest tests/integration/ -v -m integration
 
-# Ejecutar pruebas con cobertura (si está configurado)
+# Ejecutar pruebas con cobertura
 uv run pytest --cov=app --cov-report=html
 
-# Ejecutar pruebas en modo watch (requiere pytest-watch)
+# Ejecutar pruebas con cobertura (sin reporte HTML)
+uv run pytest --cov=app
+
+# Ejecutar pruebas en modo watch (ejecuta automáticamente al detectar cambios)
+# Nota: pytest-watch requiere pytest.ini (limitación conocida de la herramienta)
+# La configuración principal está en pyproject.toml
+# pytest.ini existe solo para compatibilidad con pytest-watch
 uv run pytest-watch
+
+# Opciones útiles de pytest-watch:
+# - Limpiar pantalla antes de cada ejecución
+uv run pytest-watch --clear
+
+# - Ejecutar solo pruebas unitarias en modo watch
+uv run pytest-watch tests/unit/
+
+# - Ejecutar solo pruebas de integración en modo watch
+uv run pytest-watch tests/integration/
 ```
 
 #### Tipos de Pruebas Backend
