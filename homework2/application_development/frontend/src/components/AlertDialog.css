@@ -127,6 +127,7 @@
   border-top: 1px solid #3e3e3e;
   display: flex;
   justify-content: flex-end;
+  gap: 12px;
   background-color: #2d2d30;
 }
 
@@ -151,6 +152,24 @@
 
 .alert-dialog-button:active {
   transform: translateY(0);
+}
+
+.alert-dialog-button.cancel {
+  background: linear-gradient(135deg, #3e3e3e 0%, #2d2d30 100%);
+  color: #cccccc;
+}
+
+.alert-dialog-button.cancel:hover {
+  background: linear-gradient(135deg, #4e4e4e 0%, #3e3e3e 100%);
+  color: #ffffff;
+}
+
+.alert-dialog-button.confirm {
+  background: linear-gradient(135deg, #f48771 0%, #d8705a 100%);
+}
+
+.alert-dialog-button.confirm:hover {
+  background: linear-gradient(135deg, #ff9d87 0%, #f48771 100%);
 }
 
 /* Scrollbar para el body */

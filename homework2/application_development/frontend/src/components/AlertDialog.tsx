@@ -1,23 +1,32 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import './AlertDialog.css'
 
 interface AlertDialogProps {
   isOpen: boolean
   onClose: () => void
+  onConfirm?: () => void
   title: string
   message: string
   type?: 'info' | 'warning' | 'error'
   icon?: React.ReactNode
+  confirmText?: string
+  showCancel?: boolean
 }
 
 export default function AlertDialog({ 
   isOpen, 
-  onClose, 
+  onClose,
+  onConfirm,
   title, 
   message, 
   type = 'info',
-  icon 
+  icon,
+  confirmText,
+  showCancel = false
 }: AlertDialogProps) {
+  const { t } = useTranslation()
+
   useEffect(() => {
     if (isOpen) {
       const handleEscape = (e: KeyboardEvent) => {
@@ -53,7 +62,7 @@ export default function AlertDialog({
           <button 
             className="alert-dialog-close"
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label={t('common.close')}
           >
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
               <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -64,9 +73,20 @@ export default function AlertDialog({
           <p>{message}</p>
         </div>
         <div className="alert-dialog-footer">
-          <button className="alert-dialog-button" onClick={onClose}>
-            Entendido
-          </button>
+          {showCancel && (
+            <button className="alert-dialog-button cancel" onClick={onClose}>
+              {t('common.cancel')}
+            </button>
+          )}
+          {onConfirm ? (
+            <button className="alert-dialog-button confirm" onClick={onConfirm}>
+              {confirmText || t('common.confirm')}
+            </button>
+          ) : (
+            <button className="alert-dialog-button" onClick={onClose}>
+              {t('common.understood')}
+            </button>
+          )}
         </div>
       </div>
     </div>
