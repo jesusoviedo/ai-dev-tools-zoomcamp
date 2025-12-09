@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useCodeRunner } from '../hooks/useCodeRunner'
 import type { SupportedLanguage } from './CodeEditor'
 import ErrorDisplay from './ErrorDisplay'
@@ -12,6 +13,7 @@ interface CodeRunnerProps {
 }
 
 export default function CodeRunner({ code, language }: CodeRunnerProps) {
+  const { t } = useTranslation()
   const { runCode, output, error, isLoading, isPyodideReady, clearOutput } = useCodeRunner()
   const [isOutputExpanded, setIsOutputExpanded] = useState(true)
   const [showAlert, setShowAlert] = useState(false)
@@ -21,8 +23,8 @@ export default function CodeRunner({ code, language }: CodeRunnerProps) {
     // Validar que haya un lenguaje seleccionado
     if (!language || language === '') {
       setAlertMessage({
-        title: 'Lenguaje no seleccionado',
-        message: 'Por favor, selecciona un lenguaje de programación antes de ejecutar el código.'
+        title: t('alerts.noLanguage.title'),
+        message: t('alerts.noLanguage.message')
       })
       setShowAlert(true)
       return
@@ -31,8 +33,8 @@ export default function CodeRunner({ code, language }: CodeRunnerProps) {
     // Validar que haya código
     if (!code || !code.trim()) {
       setAlertMessage({
-        title: 'Código vacío',
-        message: 'Por favor, escribe algún código antes de ejecutarlo.'
+        title: t('alerts.emptyCode.title'),
+        message: t('alerts.emptyCode.message')
       })
       setShowAlert(true)
       return
@@ -81,14 +83,14 @@ export default function CodeRunner({ code, language }: CodeRunnerProps) {
                     <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416;-31.416" repeatCount="indefinite"/>
                   </circle>
                 </svg>
-                Ejecutando...
+                {t('codeRunner.running')}
               </>
             ) : (
               <>
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
                   <path d="M8 5v14l11-7z" fill="currentColor"/>
                 </svg>
-                Ejecutar
+                {t('codeRunner.run')}
               </>
             )}
           </button>
@@ -97,7 +99,7 @@ export default function CodeRunner({ code, language }: CodeRunnerProps) {
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
                 <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               </svg>
-              Limpiar
+              {t('codeRunner.clear')}
             </button>
           )}
           {language === 'python' && !isPyodideReady && !isLoading && (
@@ -108,14 +110,14 @@ export default function CodeRunner({ code, language }: CodeRunnerProps) {
                   <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416;-31.416" repeatCount="indefinite"/>
                 </circle>
               </svg>
-              Cargando Runtime de Python...
+              {t('codeRunner.loadingRuntime')}
             </span>
           )}
         </div>
         
         {error && (
           <CollapsiblePanel 
-            title="Error de Ejecución" 
+            title={t('codeRunner.error')} 
             defaultCollapsed={false}
             icon={ErrorIcon}
           >
@@ -125,7 +127,7 @@ export default function CodeRunner({ code, language }: CodeRunnerProps) {
         
         {output && !error && (
           <CollapsiblePanel 
-            title="Salida" 
+            title={t('codeRunner.output')} 
             defaultCollapsed={!isOutputExpanded}
             icon={OutputIcon}
           >

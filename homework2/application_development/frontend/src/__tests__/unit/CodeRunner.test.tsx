@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import CodeRunner from '../../components/CodeRunner'
 
@@ -73,7 +73,7 @@ describe('CodeRunner', () => {
 
     render(<CodeRunner code="invalid python code" language="python" />)
     
-    expect(screen.getByText('Error de Ejecución')).toBeInTheDocument()
+    expect(screen.getByText(/error de ejecución/i)).toBeInTheDocument()
     // Ahora hay múltiples elementos con SyntaxError (tipo y mensaje), verificamos que existe
     expect(screen.getAllByText(/SyntaxError/i).length).toBeGreaterThan(0)
   })
@@ -86,7 +86,7 @@ describe('CodeRunner', () => {
 
     render(<CodeRunner code="console.log('test')" language="javascript" />)
     
-    const clearButton = screen.getByText('Limpiar')
+    const clearButton = screen.getByText(/limpiar/i)
     expect(clearButton).toBeInTheDocument()
   })
 
@@ -98,14 +98,14 @@ describe('CodeRunner', () => {
 
     render(<CodeRunner code="invalid code" language="javascript" />)
     
-    const clearButton = screen.getByText('Limpiar')
+    const clearButton = screen.getByText(/limpiar/i)
     expect(clearButton).toBeInTheDocument()
   })
 
   it('should not show clear button when there is no output or error', () => {
     render(<CodeRunner code="" language="javascript" />)
     
-    const clearButton = screen.queryByText('Limpiar')
+    const clearButton = screen.queryByText(/limpiar/i)
     expect(clearButton).not.toBeInTheDocument()
   })
 
@@ -159,9 +159,51 @@ describe('CodeRunner', () => {
     const user = userEvent.setup()
     render(<CodeRunner code="console.log('test')" language="javascript" />)
     
-    const clearButton = screen.getByText('Limpiar')
+    const clearButton = screen.getByText(/limpiar/i)
     await user.click(clearButton)
     
     expect(mockClearOutput).toHaveBeenCalled()
+  })
+
+  it('should disable run button when language is not selected', () => {
+    // Este test verifica que el botón está deshabilitado cuando no hay lenguaje seleccionado
+    // Esto es la protección principal que previene ejecutar código sin lenguaje.
+    // La validación dentro de handleRun (líneas 25-31) es defensiva pero en la práctica
+    // nunca se ejecutará porque React previene la ejecución de handlers en botones deshabilitados.
+    
+    mockUseCodeRunner.mockReturnValue({
+      ...defaultMockReturn,
+      isLoading: false,
+      isPyodideReady: true,
+    })
+    
+    render(<CodeRunner code="console.log('test')" language="" />)
+    
+    const runButton = screen.getByRole('button', { name: /ejecutar/i })
+    expect(runButton).toBeDisabled()
+    
+    // Verificar que el título del botón indica que está esperando
+    expect(runButton).toHaveAttribute('title', 'Esperando que el runtime esté listo...')
+  })
+
+  it('should show alert when trying to run empty code', async () => {
+    const mockRunCode = vi.fn()
+    mockUseCodeRunner.mockReturnValue({
+      ...defaultMockReturn,
+      runCode: mockRunCode,
+    })
+    
+    const user = userEvent.setup()
+    render(<CodeRunner code="   " language="javascript" />)
+    
+    const runButton = screen.getByRole('button', { name: /ejecutar/i })
+    await user.click(runButton)
+    
+    // Debería mostrar una alerta sobre código vacío
+    // Buscar por el título de la alerta que viene de las traducciones
+    await screen.findByText(/código vacío/i)
+    
+    // Verificar que runCode no fue llamado porque la validación previno la ejecución
+    expect(mockRunCode).not.toHaveBeenCalled()
   })
 })
