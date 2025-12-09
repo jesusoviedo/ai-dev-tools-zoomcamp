@@ -1,0 +1,90 @@
+{
+  "app": {
+    "name": "CodeSync",
+    "description": "Real-time collaboration platform for technical interviews. Edit code, run programs, and share sessions with candidates instantly."
+  },
+  "header": {
+    "title": "Code Editor"
+  },
+  "language": {
+    "label": "Language:",
+    "select": "Select a language",
+    "javascript": "JavaScript",
+    "python": "Python",
+    "notSelected": "Not selected",
+    "lockedTooltip": "Language is locked for this shared session",
+    "lockedNotice": "Language locked: {{language}}. This language was set when creating the session and cannot be changed.",
+    "changeWarning": {
+      "title": "Changing language will invalidate the session",
+      "message": "If you change the programming language, the shared session will become invalid. Users accessing via the link will not be able to collaborate correctly. You will need to create a new session and share the new link."
+    }
+  },
+  "codeEditor": {
+    "placeholder": "Write your code here..."
+  },
+  "codeRunner": {
+    "run": "Run",
+    "running": "Running...",
+    "clear": "Clear",
+    "loadingRuntime": "Loading Python Runtime...",
+    "output": "Output",
+    "error": "Execution Error"
+  },
+  "alerts": {
+    "emptyCode": {
+      "title": "Empty code",
+      "message": "Please write some code before executing it."
+    },
+    "noLanguage": {
+      "title": "Language not selected",
+      "message": "Please select a programming language before executing the code."
+    }
+  },
+  "sidebar": {
+    "title": "Sidebar",
+    "sessionInfo": {
+      "title": "Session Information",
+      "description": "Session information will appear here",
+      "language": "Language:",
+      "codeLines": "Lines of code:"
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Configuration options will appear here"
+    }
+  },
+  "session": {
+    "create": "Create new session",
+    "share": "Share session",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "loading": "Loading session...",
+    "notFound": "Session not found",
+    "shareWithOthers": "Share with others",
+    "createdSuccessfully": "Session created successfully",
+    "status": "Status:",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "activeUsers": "Active users:",
+    "selectLanguageFirst": "Please select a language before creating the session",
+    "languageWillBeLocked": "⚠️ The selected language ({{language}}) will be locked when creating the session. Users accessing via the link will not be able to change it.",
+    "languageChangeWarning": "⚠️ If you change the language, the shared session will become invalid. You will need to create a new session.",
+    "shareDialog": {
+      "title": "Share session",
+      "description": "Share this link with others to collaborate in real-time",
+      "languageInfo": "Language locked: {{language}}. Users accessing via this link will use this language.",
+      "copy": "Copy",
+      "close": "Close"
+    }
+  },
+  "common": {
+    "understood": "Got it",
+    "close": "Close",
+    "show": "Show",
+    "hide": "Hide",
+    "toggle": "Toggle sidebar",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  }
+}
+

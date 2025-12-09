@@ -1,0 +1,90 @@
+{
+  "app": {
+    "name": "CodeSync",
+    "description": "Plataforma de colaboración en tiempo real para entrevistas técnicas. Edita código, ejecuta programas y comparte sesiones con candidatos de forma instantánea."
+  },
+  "header": {
+    "title": "Editor de Código"
+  },
+  "language": {
+    "label": "Lenguaje:",
+    "select": "Selecciona un lenguaje",
+    "javascript": "JavaScript",
+    "python": "Python",
+    "notSelected": "No seleccionado",
+    "lockedTooltip": "El lenguaje está bloqueado para esta sesión compartida",
+    "lockedNotice": "Lenguaje bloqueado: {{language}}. Este lenguaje fue definido al crear la sesión y no puede cambiarse.",
+    "changeWarning": {
+      "title": "Cambiar lenguaje invalidará la sesión",
+      "message": "Si cambias el lenguaje de programación, la sesión compartida será inválida. Los usuarios que accedan con el enlace no podrán colaborar correctamente. Deberás crear una nueva sesión y compartir el nuevo enlace."
+    }
+  },
+  "codeEditor": {
+    "placeholder": "Escribe tu código aquí..."
+  },
+  "codeRunner": {
+    "run": "Ejecutar",
+    "running": "Ejecutando...",
+    "clear": "Limpiar",
+    "loadingRuntime": "Cargando Runtime de Python...",
+    "output": "Salida",
+    "error": "Error de Ejecución"
+  },
+  "alerts": {
+    "emptyCode": {
+      "title": "Código vacío",
+      "message": "Por favor, escribe algún código antes de ejecutarlo."
+    },
+    "noLanguage": {
+      "title": "Lenguaje no seleccionado",
+      "message": "Por favor, selecciona un lenguaje de programación antes de ejecutar el código."
+    }
+  },
+  "sidebar": {
+    "title": "Panel Lateral",
+    "sessionInfo": {
+      "title": "Información de Sesión",
+      "description": "Información de la sesión aparecerá aquí",
+      "language": "Lenguaje:",
+      "codeLines": "Líneas de código:"
+    },
+    "settings": {
+      "title": "Configuración",
+      "description": "Opciones de configuración aparecerán aquí"
+    }
+  },
+  "session": {
+    "create": "Crear nueva sesión",
+    "share": "Compartir sesión",
+    "copyLink": "Copiar enlace",
+    "linkCopied": "Enlace copiado",
+    "loading": "Cargando sesión...",
+    "notFound": "Sesión no encontrada",
+    "shareWithOthers": "Compartir con otros",
+    "createdSuccessfully": "Sesión creada exitosamente",
+    "status": "Estado:",
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "activeUsers": "Usuarios activos:",
+    "selectLanguageFirst": "Por favor, selecciona un lenguaje antes de crear la sesión",
+    "languageWillBeLocked": "⚠️ El lenguaje seleccionado ({{language}}) quedará bloqueado al crear la sesión. Los usuarios que accedan con el enlace no podrán cambiarlo.",
+    "languageChangeWarning": "⚠️ Si cambias el lenguaje, la sesión compartida será inválida. Deberás crear una nueva sesión.",
+    "shareDialog": {
+      "title": "Compartir sesión",
+      "description": "Comparte este enlace con otros para colaborar en tiempo real",
+      "languageInfo": "Lenguaje bloqueado: {{language}}. Los usuarios que accedan con este enlace usarán este lenguaje.",
+      "copy": "Copiar",
+      "close": "Cerrar"
+    }
+  },
+  "common": {
+    "understood": "Entendido",
+    "close": "Cerrar",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "toggle": "Alternar panel lateral",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar"
+  }
+}
+
