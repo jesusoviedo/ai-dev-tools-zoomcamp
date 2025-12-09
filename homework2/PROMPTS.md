@@ -80,3 +80,46 @@ Por favor, comienza configurando la estructura de directorios para las pruebas e
 ---
 
 ### Prompt 3:
+
+**Rol:** Actúa como un Ingeniero DevOps y Desarrollador Full Stack.
+
+**Objetivo:** Mejorar la Experiencia de Desarrollo (DX) permitiendo ejecutar tanto el cliente (Frontend) como el servidor (Backend) simultáneamente con un solo comando desde la raíz del proyecto.
+
+**Herramienta requerida:** `concurrently` (paquete de Node.js).
+
+**Instrucciones:**
+
+1.  **Inicialización en Raíz:** Crea un archivo `package.json` en el directorio raíz del proyecto (si no existe) para orquestar los scripts globales.
+2.  **Instalación:** Agrega `concurrently` como dependencia de desarrollo (`devDependencies`).
+3.  **Configuración de Scripts:** Define un script llamado `dev` en el `package.json` que ejecute ambos procesos en paralelo.
+      * **Proceso Backend:** Debe usar **`uv`** para ejecutar el servidor. El comando típico debería ser similar a `uv run uvicorn backend.main:app --reload --port 8000` (ajusta la ruta `backend.main:app` según tu estructura real).
+      * **Proceso Frontend:** Debe ejecutar el script de desarrollo de Vite dentro de la carpeta frontend. Usa la bandera `--prefix` o `cd`, por ejemplo: `npm run dev --prefix frontend`.
+4.  **Salida:** Proporciona el contenido final del `package.json` y el comando de terminal para iniciar todo el entorno.
+
+**Nota:** Asegúrate de que los colores de salida de `concurrently` sean distintos para diferenciar fácilmente los logs del frontend y del backend.
+
+---
+
+### Prompt 4:
+
+**Rol:** Actúa como un Desarrollador Frontend Senior especializado en React y UX.
+
+**Objetivo:** Mejorar el editor de código actual (que es un simple `textarea`) integrando una librería profesional que soporte **resaltado de sintaxis (Syntax Highlighting)**.
+
+**Requerimientos:**
+
+1.  **Selección de Librería:** Recomienda e implementa una librería de edición de código robusta para React. Preferiblemente **Monaco Editor** (la base de VS Code) por su familiaridad, o **CodeMirror**. Elige la que consideres mejor para una plataforma de entrevistas.
+2.  **Soporte Multi-lenguaje:** La implementación debe soportar específicamente **JavaScript** y **Python**.
+3.  **Selector de Lenguaje:** Añade un menú desplegable (dropdown) en la UI (encima del editor) que permita al usuario cambiar entre "JavaScript" y "Python".
+4.  **Integración de Estado:** Asegúrate de que el nuevo componente del editor propague los cambios de código al estado de la aplicación (para que la lógica de WebSocket existente siga funcionando y enviando los cambios).
+
+**Instrucciones:**
+
+- Dime qué paquete npm debo instalar.
+- Proporciona el código del nuevo componente `CodeEditor`.
+- Actualiza el componente principal para usar este nuevo editor en lugar del `textarea`.
+- 
+---
+
+### Prompt 5:
+
