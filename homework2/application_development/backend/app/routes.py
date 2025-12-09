@@ -1,7 +1,7 @@
 """REST API routes."""
 
 import secrets
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Dict
 from fastapi import APIRouter, HTTPException, status
 from app.models import (
@@ -45,7 +45,7 @@ async def create_session(request: CreateSessionRequest = CreateSessionRequest())
         "language": request.language or "python",
         "initial_code": request.initial_code or "# Escribe tu código aquí",
         "title": request.title,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(UTC),
         "active_users": 0,
         "current_code": request.initial_code or "# Escribe tu código aquí"
     }

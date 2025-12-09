@@ -1,6 +1,6 @@
 """Pydantic models for request/response validation."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Optional
 from pydantic import BaseModel, Field
 
@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 class HealthResponse(BaseModel):
     """Response model for health check endpoint."""
     status: str = Field(default="ok", description="Estado del servidor")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Timestamp de la verificación")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Timestamp de la verificación")
 
 
 class CreateSessionRequest(BaseModel):
