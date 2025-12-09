@@ -295,7 +295,6 @@ El archivo `application_development/agents.md` contiene las siguientes instrucci
 
 - [Curso completo - AI Dev Tools Zoomcamp](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp)
 - [Semana 2 - Desarrollo End-to-End](./../week2/)
-- [Formulario de entrega](https://courses.datatalks.club/ai-dev-tools-2025/homework/hw2)
 
 ### 📚 Recursos de Aprendizaje
 
@@ -595,7 +594,6 @@ The `application_development/agents.md` file contains the following instructions
 
 - [Complete course - AI Dev Tools Zoomcamp](https://github.com/DataTalksClub/ai-dev-tools-zoomcamp)
 - [Week 2 - End-to-End Development](./../week2/)
-- [Submission form](https://courses.datatalks.club/ai-dev-tools-2025/homework/hw2)
 
 ### 📚 Learning Resources
 
