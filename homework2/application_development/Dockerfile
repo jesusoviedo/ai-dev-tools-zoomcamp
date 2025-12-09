@@ -43,7 +43,11 @@ RUN apt-get update && \
 ENV PATH="/usr/local/bin:$PATH"
 
 # Crear usuario no privilegiado para ejecutar la aplicación
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Crear directorio home y dar permisos para que uv pueda crear su caché
+RUN groupadd -r appuser && \
+    useradd -r -g appuser -m -d /home/appuser appuser && \
+    mkdir -p /home/appuser/.cache/uv && \
+    chown -R appuser:appuser /home/appuser
 
 WORKDIR /app
 
@@ -53,10 +57,11 @@ COPY backend/uv.lock* ./
 
 # Instalar dependencias del backend (sin dev dependencies) como root
 # Usar --frozen solo si existe uv.lock, de lo contrario sync normal
+# --no-group dev excluye los dependency-groups de desarrollo
 RUN if [ -f uv.lock ]; then \
-        uv sync --no-dev --frozen; \
+        uv sync --frozen --no-group dev; \
     else \
-        uv sync --no-dev; \
+        uv sync --no-group dev; \
     fi
 
 # Copiar código fuente del backend
@@ -84,5 +89,6 @@ ENV PYTHONPATH=/app
 EXPOSE 8000
 
 # Comando por defecto: ejecutar FastAPI con uvicorn
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Usar --no-sync para evitar instalar dependencias adicionales en runtime
+CMD ["uv", "run", "--no-sync", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
