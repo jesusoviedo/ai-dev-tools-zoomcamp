@@ -1,0 +1,11 @@
+[project]
+name = "coding-interview-platform-backend"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.124.0",
+    "python-multipart>=0.0.20",
+    "uvicorn>=0.38.0",
+    "websockets>=15.0.1",
+]
