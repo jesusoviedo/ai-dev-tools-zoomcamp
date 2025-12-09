@@ -17,6 +17,8 @@
   flex-direction: column;
   padding: 20px;
   background-color: #1e1e1e;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .editor-section h1 {
@@ -25,22 +27,12 @@
   font-size: 24px;
 }
 
+/* Estilos del editor de código ahora están en CodeEditor.css */
+/* Mantenemos esta clase por compatibilidad si se usa en otros lugares */
 .code-editor {
   flex: 1;
   width: 100%;
-  padding: 15px;
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  background-color: #2d2d2d;
-  color: #d4d4d4;
-  border: 1px solid #3e3e3e;
-  border-radius: 4px;
-  resize: none;
-  outline: none;
-}
-
-.code-editor:focus {
-  border-color: #007acc;
+  min-height: 0;
 }
 
 .sidebar {

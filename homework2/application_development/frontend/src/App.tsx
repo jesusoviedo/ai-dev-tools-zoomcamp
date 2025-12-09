@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import CodeEditor from './components/CodeEditor'
 import './App.css'
 
 function App() {
@@ -9,12 +10,7 @@ function App() {
       <div className="main-content">
         <div className="editor-section">
           <h1>Editor de Código</h1>
-          <textarea
-            className="code-editor"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="Escribe tu código aquí..."
-          />
+          <CodeEditor value={code} onChange={setCode} />
         </div>
         <div className="sidebar">
           <h2>Panel Lateral</h2>
