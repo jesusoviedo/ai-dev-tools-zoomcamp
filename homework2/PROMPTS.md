@@ -118,8 +118,34 @@ Por favor, comienza configurando la estructura de directorios para las pruebas e
 - Dime qué paquete npm debo instalar.
 - Proporciona el código del nuevo componente `CodeEditor`.
 - Actualiza el componente principal para usar este nuevo editor en lugar del `textarea`.
-- 
+  
 ---
 
 ### Prompt 5:
+
+**Rol:** Actúa como un Ingeniero de Seguridad y Desarrollador Frontend.
+
+**Objetivo:** Implementar la ejecución de código segura ("Sandboxed Code Execution") directamente en el navegador del usuario, evitando cualquier ejecución en el servidor (backend).
+
+**Requerimiento Técnico:**
+Utiliza **WebAssembly (WASM)** para compilar y ejecutar el código.
+
+**Instrucciones de Implementación:**
+
+1.  **Para Python:** Integra la librería **Pyodide**.
+      - Crea un mecanismo para cargar Pyodide de manera eficiente (puede ser desde un CDN o npm).
+      - Implementa una función que tome el código del editor y lo ejecute usando `pyodide.runPythonAsync` o similar.
+      - **Crucial:** Debes capturar la salida estándar (`stdout`) para que cuando el usuario escriba `print("Hola")`, ese texto se capture y se muestre en la interfaz.
+2.  **Para JavaScript:** Puedes usar una ejecución segura con `new Function()`
+3.  **Interfaz de Usuario:**
+      - Añade un botón "Run Code" o "Ejecutar".
+      - Añade un panel de "Consola/Output" debajo del editor para mostrar los resultados o errores.
+      - Muestra un indicador de "Cargando Runtime..." mientras Pyodide se inicializa.
+
+**Entregable:**
+Dime qué librería/script debo agregar y proporciona el código actualizado para el componente del Editor o un nuevo componente `CodeRunner`.
+  
+---
+
+### Prompt 6:
 
