@@ -116,18 +116,49 @@ Esta tarea cubre el desarrollo completo de una aplicación end-to-end asistida p
 
 ### 📁 Estructura de archivos
 
-La estructura completa del proyecto se documentará una vez que el código esté implementado. Por ahora, el proyecto sigue esta organización básica:
+La estructura completa del proyecto es la siguiente:
 
 ```
 homework2/
-├── application_development/      # Código fuente del proyecto
-│   ├── backend/                  # Backend FastAPI
-│   ├── frontend/                 # Frontend React + Vite
-│   └── agents.md                 # Instrucciones para IA
-└── README.md                     # Este archivo
+├── PROMPTS.md                    # Prompts utilizados durante el desarrollo
+├── README.md                     # Este archivo
+└── application_development/      # Código fuente del proyecto
+    ├── AGENTS.md                 # Instrucciones para IA (Cursor IDE)
+    ├── openapi.yaml              # Especificación OpenAPI de la API
+    ├── .gitignore                # Archivos ignorados por Git
+    ├── backend/                  # Backend FastAPI
+    │   ├── main.py               # Punto de entrada de la aplicación
+    │   ├── pyproject.toml        # Configuración y dependencias (uv)
+    │   ├── uv.lock               # Lock file de dependencias (uv)
+    │   ├── .python-version       # Versión de Python requerida
+    │   ├── .gitignore            # Archivos ignorados por Git (backend)
+    │   ├── README.md             # Documentación del backend
+    │   ├── app/                  # Módulo principal de la aplicación
+    │   │   ├── __init__.py
+    │   │   ├── models.py         # Modelos de datos (Pydantic)
+    │   │   ├── routes.py         # Endpoints REST API
+    │   │   └── websocket.py      # Manejo de WebSockets
+    │   └── tests/                # Tests del backend
+    └── frontend/                 # Frontend React + Vite
+        ├── index.html            # HTML principal
+        ├── package.json          # Dependencias y scripts npm
+        ├── tsconfig.json         # Configuración TypeScript
+        ├── tsconfig.node.json    # Configuración TypeScript para Node
+        ├── vite.config.ts        # Configuración de Vite
+        ├── .gitignore            # Archivos ignorados por Git (frontend)
+        ├── README.md             # Documentación del frontend
+        ├── src/                  # Código fuente del frontend
+        │   ├── App.tsx           # Componente principal
+        │   ├── App.css           # Estilos del componente App
+        │   ├── main.tsx          # Punto de entrada React
+        │   ├── index.css         # Estilos globales
+        │   ├── vite-env.d.ts     # Tipos de Vite
+        │   ├── components/       # Componentes React
+        │   ├── hooks/            # Custom hooks
+        │   ├── types/            # Definiciones de tipos TypeScript
+        │   └── utils/            # Utilidades y helpers
+        └── public/               # Archivos estáticos públicos
 ```
-
-> **Nota:** La estructura detallada se actualizará conforme se complete el desarrollo del proyecto.
 
 ### 🔧 Comandos Útiles
 
@@ -196,7 +227,7 @@ Este proyecto utiliza un archivo `agents.md` para configurar el asistente de IA 
 
 #### Contenido del agents.md del proyecto
 
-El archivo `application_development/agents.md` contiene las siguientes instrucciones:
+El archivo `application_development/AGENTS.md` contiene las siguientes instrucciones:
 
 ```markdown
 # Instrucciones para el Agente de IA
@@ -280,6 +311,16 @@ El archivo `application_development/agents.md` contiene las siguientes instrucci
 - **Eficiencia:** No necesitas repetir instrucciones en cada prompt
 - **Mejores Prácticas:** Las reglas del proyecto se aplican automáticamente
 - **Prevención de Errores:** Evita commits de archivos temporales y uso incorrecto de herramientas
+
+### 📝 Documentación de Prompts
+
+Este proyecto incluye un archivo `PROMPTS.md` en la raíz de `homework2/` que documenta los prompts principales utilizados durante el desarrollo de la plataforma. Este archivo es útil para:
+
+- **Referencia:** Ver qué prompts se utilizaron para generar el código
+- **Reproducibilidad:** Entender cómo se construyó la aplicación paso a paso
+- **Aprendizaje:** Estudiar las técnicas de prompt engineering aplicadas
+
+El archivo contiene los prompts iniciales que guiaron la implementación de la plataforma, incluyendo el enfoque API-first con OpenAPI y la arquitectura del proyecto.
 
 ### 🎓 Preguntas del Homework
 
@@ -415,18 +456,49 @@ This assignment covers complete end-to-end application development assisted by A
 
 ### 📁 File structure
 
-The complete project structure will be documented once the code is implemented. For now, the project follows this basic organization:
+The complete project structure is as follows:
 
 ```
 homework2/
-├── application_development/      # Project source code
-│   ├── backend/                  # FastAPI Backend
-│   ├── frontend/                 # React + Vite Frontend
-│   └── agents.md                 # Instructions for AI
-└── README.md                     # This file
+├── PROMPTS.md                    # Prompts used during development
+├── README.md                     # This file
+└── application_development/      # Project source code
+    ├── AGENTS.md                 # Instructions for AI (Cursor IDE)
+    ├── openapi.yaml              # OpenAPI API specification
+    ├── .gitignore                # Git ignored files
+    ├── backend/                  # FastAPI Backend
+    │   ├── main.py               # Application entry point
+    │   ├── pyproject.toml        # Configuration and dependencies (uv)
+    │   ├── uv.lock               # Dependency lock file (uv)
+    │   ├── .python-version       # Required Python version
+    │   ├── .gitignore            # Git ignored files (backend)
+    │   ├── README.md             # Backend documentation
+    │   ├── app/                  # Main application module
+    │   │   ├── __init__.py
+    │   │   ├── models.py         # Data models (Pydantic)
+    │   │   ├── routes.py         # REST API endpoints
+    │   │   └── websocket.py      # WebSocket handling
+    │   └── tests/                # Backend tests
+    └── frontend/                 # React + Vite Frontend
+        ├── index.html            # Main HTML
+        ├── package.json          # npm dependencies and scripts
+        ├── tsconfig.json         # TypeScript configuration
+        ├── tsconfig.node.json    # TypeScript configuration for Node
+        ├── vite.config.ts        # Vite configuration
+        ├── .gitignore            # Git ignored files (frontend)
+        ├── README.md             # Frontend documentation
+        ├── src/                  # Frontend source code
+        │   ├── App.tsx           # Main component
+        │   ├── App.css           # App component styles
+        │   ├── main.tsx          # React entry point
+        │   ├── index.css         # Global styles
+        │   ├── vite-env.d.ts     # Vite types
+        │   ├── components/       # React components
+        │   ├── hooks/            # Custom hooks
+        │   ├── types/            # TypeScript type definitions
+        │   └── utils/            # Utilities and helpers
+        └── public/               # Public static files
 ```
-
-> **Note:** The detailed structure will be updated as the project development is completed.
 
 ### 🔧 Useful Commands
 
@@ -495,7 +567,7 @@ This project uses an `agents.md` file to configure Cursor IDE's AI assistant. Th
 
 #### Project agents.md Content
 
-The `application_development/agents.md` file contains the following instructions:
+The `application_development/AGENTS.md` file contains the following instructions:
 
 ```markdown
 # Instrucciones para el Agente de IA
@@ -579,6 +651,16 @@ The `application_development/agents.md` file contains the following instructions
 - **Efficiency:** You don't need to repeat instructions in each prompt
 - **Best Practices:** Project rules are applied automatically
 - **Error Prevention:** Prevents commits of temporary files and incorrect tool usage
+
+### 📝 Prompt Documentation
+
+This project includes a `PROMPTS.md` file in the root of `homework2/` that documents the main prompts used during platform development. This file is useful for:
+
+- **Reference:** See what prompts were used to generate the code
+- **Reproducibility:** Understand how the application was built step by step
+- **Learning:** Study the applied prompt engineering techniques
+
+The file contains the initial prompts that guided the platform implementation, including the API-first approach with OpenAPI and the project architecture.
 
 ### 🎓 Homework Questions
 
