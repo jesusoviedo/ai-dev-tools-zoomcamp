@@ -78,6 +78,7 @@ uv run uvicorn main:app --reload --port 8000
 **Terminal 2 - Frontend:**
 ```bash
 cd frontend
+nvm use  # Cargar la versión de Node.js especificada en .nvmrc
 npm run dev
 ```
 
@@ -91,6 +92,7 @@ npm run dev
 
 ```bash
 cd frontend
+nvm use  # Cargar la versión de Node.js especificada en .nvmrc
 npm run build
 ```
 
@@ -167,6 +169,9 @@ uv run pytest-watch tests/integration/
 ```bash
 cd frontend
 
+# Asegúrate de que nvm esté cargado y usar la versión correcta
+nvm use
+
 # Ejecutar todas las pruebas una vez
 npm run test:run
 
@@ -179,6 +184,8 @@ npm run test:unit
 # Ejecutar pruebas con cobertura
 npm run test:coverage
 ```
+
+> **Nota:** Si nvm está configurado en tu `.bashrc`, se cargará automáticamente al iniciar sesión. Si `npm` no se encuentra, carga nvm manualmente: `export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"`
 
 #### Requisitos Frontend Testing
 

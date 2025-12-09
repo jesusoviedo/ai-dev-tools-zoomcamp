@@ -11,14 +11,22 @@ Frontend desarrollado con React + Vite + TypeScript.
 ./install.sh
 
 # Desarrollo
+cd frontend
+nvm use
 npm run dev
 
 # Build
+cd frontend
+nvm use
 npm run build
 
 # Testing
-npm test -- --run
+cd frontend
+nvm use  # Esto ahora funcionará porque nvm está cargado
+npm run test:run
 ```
+
+> **Nota:** Si nvm está configurado en tu `.bashrc`, se cargará automáticamente al iniciar sesión. Si `npm` no se encuentra, asegúrate de que nvm esté cargado ejecutando: `export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"`
 
 ## Requisitos
 
