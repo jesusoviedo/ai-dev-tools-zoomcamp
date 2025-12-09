@@ -1,0 +1,51 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+venv/
+
+# VSCode settings
+.vscode/
+
+# Environment variables
+.env
+.env.*
+
+# macOS files
+.DS_Store
+
+# Test and coverage files
+.coverage
+htmlcov/
+*.log
+
+
+# Node related
+node_modules/
+npm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+package-lock.json
+
+# Build output - React/Vite
+dist/
+build/
+
+# Local database files
+*.sqlite3
+*.db
+
+# IDEs and editors
+.idea/
+*.swp
+
+# Misc
+*.local
+
+# Optional: ignore frontend/.env if exists
+frontend/.env
+backend/.env
+
