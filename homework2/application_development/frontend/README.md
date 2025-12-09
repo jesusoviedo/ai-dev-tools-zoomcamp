@@ -2,29 +2,25 @@
 
 Frontend desarrollado con React + Vite + TypeScript.
 
-## Instalación
+> 📖 **Documentación completa**: Consulta el [README principal](../README.md) para información detallada sobre instalación, desarrollo y testing.
+
+## Inicio Rápido
 
 ```bash
+# Instalación
 npm install
-```
 
-## Desarrollo
-
-```bash
+# Desarrollo
 npm run dev
-```
 
-La aplicación estará disponible en http://localhost:5173
-
-## Build
-
-```bash
+# Build
 npm run build
+
+# Testing
+npm test -- --run
 ```
 
-## Testing
+## Requisitos
 
-```bash
-npm test
-```
+- Node.js 18+ (requerido para ejecutar los tests)
 

@@ -2,34 +2,19 @@
 
 Backend desarrollado con FastAPI (Python 3.13+).
 
-## Instalación
+> 📖 **Documentación completa**: Consulta el [README principal](../README.md) para información detallada sobre instalación, desarrollo y testing.
+
+## Inicio Rápido
 
 ```bash
-# Crear entorno virtual e instalar dependencias
+# Instalación
 uv venv && uv sync
-```
 
-## Desarrollo
-
-```bash
-# Activar entorno virtual
+# Desarrollo
 source .venv/bin/activate  # En Windows: .venv\Scripts\activate
-
-# Ejecutar servidor de desarrollo
 uv run uvicorn main:app --reload --port 8000
-```
 
-El servidor estará disponible en http://localhost:8000
-
-## Documentación API
-
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-## Testing
-
-```bash
-# Ejecutar tests
+# Testing
 uv run pytest
 ```
 
@@ -39,4 +24,5 @@ uv run pytest
 - `app/models.py` - Modelos Pydantic para validación
 - `app/routes.py` - Rutas REST API
 - `app/websocket.py` - Manejo de WebSockets
+- `tests/` - Pruebas unitarias e integración
 
