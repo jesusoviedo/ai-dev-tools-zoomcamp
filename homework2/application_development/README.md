@@ -7,6 +7,8 @@ Plataforma de entrevistas de código online con colaboración en tiempo real des
 - [Requisitos](#requisitos)
 - [Instalación](#instalación)
 - [Desarrollo](#desarrollo)
+- [Docker](#-docker)
+- [CI/CD y Despliegue](#-cicd-y-despliegue)
 - [Testing](#testing)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Documentación API](#documentación-api)
@@ -169,6 +171,70 @@ Una vez que el contenedor esté ejecutándose:
 - **Imagen base final**: `python:3.13-slim`
 - El frontend se construye y se sirve como archivos estáticos desde FastAPI
 - Las rutas `/api` y `/ws` tienen prioridad sobre los archivos estáticos
+
+## 🚀 CI/CD y Despliegue
+
+El proyecto incluye un pipeline completo de CI/CD usando GitHub Actions para desplegar automáticamente en Render.com.
+
+### Archivos de Configuración
+
+- **`.github/workflows/deploy.yml`** - Pipeline de GitHub Actions con 4 jobs secuenciales
+- **`render.yaml`** - Configuración de Infraestructura como Código para Render
+
+### Configuración de Secretos en GitHub
+
+Para que el pipeline funcione correctamente, necesitas configurar el siguiente secreto en tu repositorio de GitHub:
+
+**Secreto Requerido:** `RENDER_DEPLOY_HOOK_URL`
+
+**Pasos para obtener y configurar el Deploy Hook:**
+
+1. **Crear el servicio en Render:**
+   - Ve a [render.com](https://render.com) y crea una cuenta (si no tienes una)
+   - Conecta tu repositorio de GitHub
+   - Crea un nuevo "Web Service"
+   - Selecciona tu repositorio y la rama `main`
+   - Render detectará automáticamente el `Dockerfile` y el `render.yaml`
+
+2. **Obtener el Deploy Hook URL:**
+   - Una vez creado el servicio, ve a la configuración del servicio
+   - Busca la sección "Manual Deploy Hook" o "Deploy Hooks"
+   - Haz clic en "Create Deploy Hook" o copia la URL del hook existente
+   - La URL tendrá un formato similar a: `https://api.render.com/deploy/srv-xxxxx?key=xxxxx`
+
+3. **Configurar el secreto en GitHub:**
+   - Ve a tu repositorio en GitHub
+   - Navega a **Settings** → **Secrets and variables** → **Actions**
+   - Haz clic en **New repository secret**
+   - Nombre: `RENDER_DEPLOY_HOOK_URL`
+   - Valor: Pega la URL completa del Deploy Hook que copiaste de Render
+   - Haz clic en **Add secret**
+
+### Flujo del Pipeline
+
+El pipeline se ejecuta automáticamente cuando haces `push` a la rama `main` y sigue este flujo:
+
+1. **Backend Unit Tests** - Ejecuta las pruebas unitarias del backend
+2. **Frontend Unit Tests** - Ejecuta las pruebas unitarias del frontend
+3. **Integration Tests** - Solo se ejecuta si los tests anteriores pasan
+4. **Deploy to Render** - Solo se ejecuta si TODOS los tests pasan exitosamente
+
+### Verificación
+
+Para verificar que todo funciona:
+
+1. Haz un `push` a la rama `main`
+2. Ve a la pestaña **Actions** en tu repositorio de GitHub
+3. Deberías ver el workflow ejecutándose
+4. Si todos los tests pasan, el despliegue se activará automáticamente en Render
+5. Puedes verificar el despliegue en el dashboard de Render
+
+### Notas Importantes
+
+- El pipeline solo se ejecuta en la rama `main`
+- Si algún test falla, el despliegue NO se ejecutará
+- El Deploy Hook de Render activa un nuevo despliegue, pero Render construirá la imagen Docker desde el código más reciente
+- Asegúrate de que el servicio en Render esté configurado para usar el `Dockerfile` de la raíz del proyecto
 
 ## 🧪 Testing
 

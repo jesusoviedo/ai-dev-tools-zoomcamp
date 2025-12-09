@@ -359,3 +359,4 @@ components:
           description: Detalles adicionales del error
           additionalProperties: true
 
+
