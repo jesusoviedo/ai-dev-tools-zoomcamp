@@ -8,7 +8,7 @@ Frontend desarrollado con React + Vite + TypeScript.
 
 ```bash
 # Instalación
-npm install
+./install.sh
 
 # Desarrollo
 npm run dev
@@ -22,5 +22,4 @@ npm test -- --run
 
 ## Requisitos
 
-- Node.js 18+ (requerido para ejecutar los tests)
-
+- **Node.js 18+** (requerido)

@@ -48,10 +48,18 @@ Esta tarea cubre el desarrollo completo de una aplicación end-to-end asistida p
 
 - **Backend:**
   - Python 3.13+
-  - [uv](https://github.com/astral-sh/uv) instalado (recomendado) o pip
+  - **uv** - Gestor de paquetes Python rápido y moderno (recomendado) o pip
+    - **¿Qué es uv?** `uv` es un gestor de paquetes Python extremadamente rápido escrito en Rust. Es una alternativa moderna a `pip` y `pip-tools` que ofrece instalación de dependencias mucho más rápida y mejor gestión de entornos virtuales.
+    - **¿Por qué lo recomendamos?** Este proyecto usa `pyproject.toml` y `uv.lock` para gestionar dependencias. `uv` es más rápido que `pip` y ofrece mejor resolución de dependencias.
+    - **Instalación:** `curl -LsSf https://astral.sh/uv/install.sh | sh` (Linux/macOS) o `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"` (Windows)
+    - **Alternativa:** Si prefieres usar `pip`, puedes instalar dependencias con `pip install -r requirements.txt` (si existe)
 
 - **Frontend:**
   - Node.js 18+ y npm
+  - **nvm (Node Version Manager)** - Requerido para gestionar versiones de Node.js
+    - **¿Qué es nvm?** Herramienta para instalar y cambiar entre múltiples versiones de Node.js. Permite mantener consistencia entre proyectos.
+    - **Instalación:** `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash`
+    - El proyecto usa `.nvmrc` para especificar la versión exacta requerida.
 
 - **Opcional:**
   - Docker (para containerización)
@@ -73,8 +81,10 @@ Esta tarea cubre el desarrollo completo de una aplicación end-to-end asistida p
 3. **Configurar el Frontend (React + Vite):**
    ```bash
    cd ../frontend
-   npm install
+   ./install.sh  # Script que carga nvm y ejecuta npm install automáticamente
    ```
+   
+   > **Nota:** El script `install.sh` carga nvm automáticamente y usa la versión de Node.js especificada en `.nvmrc`. Si prefieres instalación manual, asegúrate de que nvm esté cargado y ejecuta `nvm use` seguido de `npm install`.
 
 4. **Ejecutar ambos servicios simultáneamente:**
    
@@ -388,10 +398,18 @@ This assignment covers complete end-to-end application development assisted by A
 
 - **Backend:**
   - Python 3.13+
-  - [uv](https://github.com/astral-sh/uv) installed (recommended) or pip
+  - **uv** - Fast and modern Python package manager (recommended) or pip
+    - **What is uv?** `uv` is an extremely fast Python package manager written in Rust. It's a modern alternative to `pip` and `pip-tools` that offers much faster dependency installation and better virtual environment management.
+    - **Why we recommend it:** This project uses `pyproject.toml` and `uv.lock` to manage dependencies. `uv` is faster than `pip` and offers better dependency resolution.
+    - **Installation:** `curl -LsSf https://astral.sh/uv/install.sh | sh` (Linux/macOS) or `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"` (Windows)
+    - **Alternative:** If you prefer using `pip`, you can install dependencies with `pip install -r requirements.txt` (if it exists)
 
 - **Frontend:**
   - Node.js 18+ and npm
+  - **nvm (Node Version Manager)** - Required to manage Node.js versions
+    - **What is nvm?** Tool to install and switch between multiple Node.js versions. Helps maintain consistency across projects.
+    - **Installation:** `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash`
+    - The project uses `.nvmrc` to specify the exact required version.
 
 - **Optional:**
   - Docker (for containerization)
@@ -413,8 +431,10 @@ This assignment covers complete end-to-end application development assisted by A
 3. **Set up Frontend (React + Vite):**
    ```bash
    cd ../frontend
-   npm install
+   ./install.sh  # Script that loads nvm and runs npm install automatically
    ```
+   
+   > **Note:** The `install.sh` script automatically loads nvm and uses the Node.js version specified in `.nvmrc`. If you prefer manual installation, ensure nvm is loaded and run `nvm use` followed by `npm install`.
 
 4. **Run both services simultaneously:**
    

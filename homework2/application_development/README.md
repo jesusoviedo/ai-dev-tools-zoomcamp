@@ -15,10 +15,11 @@ Plataforma de entrevistas de código online con colaboración en tiempo real des
 
 ### Backend
 - Python 3.13+
-- [uv](https://github.com/astral-sh/uv) instalado (recomendado) o pip
+- [uv](https://github.com/astral-sh/uv) instalado
 
 ### Frontend
-- Node.js 18+ y npm
+- **Node.js 18+** (requerido)
+- [nvm](https://www.nvmnode.com/) instalado 
 
 ## 🚀 Instalación
 
@@ -32,10 +33,28 @@ uv venv && uv sync
 
 ### Frontend
 
+**Opción 1: Script automático (recomendado)**
 ```bash
 cd frontend
+./install.sh
+```
+Este script carga nvm automáticamente, usa la versión de Node.js especificada en `.nvmrc` (si existe), e instala todas las dependencias.
+
+**Opción 2: Instalación manual (requiere nvm cargado)**
+```bash
+cd frontend
+# Asegúrate de que nvm esté cargado en tu terminal
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Usar la versión especificada en .nvmrc
+nvm use
+
+# Instalar dependencias
 npm install
 ```
+
+> **Nota:** Si usas nvm, normalmente se carga automáticamente en nuevas terminales desde `.bashrc` o `.zshrc`. El script `install.sh` detecta y usa la versión correcta de Node.js automáticamente.
 
 ## 💻 Desarrollo
 
@@ -149,25 +168,21 @@ uv run pytest-watch tests/integration/
 cd frontend
 
 # Ejecutar todas las pruebas una vez
-npm test -- --run
+npm run test:run
 
-# Ejecutar pruebas en modo watch (por defecto)
+# Ejecutar pruebas en modo watch (detecta cambios automáticamente)
 npm test
 
 # Ejecutar solo pruebas unitarias
 npm run test:unit
 
 # Ejecutar pruebas con cobertura
-npm test -- --coverage
-
-# Ejecutar pruebas en modo UI
-npm test -- --ui
+npm run test:coverage
 ```
 
 #### Requisitos Frontend Testing
 
-- Node.js 18+ (requerido para ejecutar los tests)
-- Las pruebas usan jsdom para simular el entorno del navegador
+- Node.js 18+ (se usa automáticamente la versión de `.nvmrc`)
 
 #### Tipos de Pruebas Frontend
 
