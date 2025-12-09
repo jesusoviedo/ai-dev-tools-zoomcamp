@@ -183,3 +183,35 @@ Utiliza un **Multi-stage Build** en el `Dockerfile` para mantener la imagen fina
 ---
 
 ### Prompt 7:
+
+**Rol:** Actúa como un Ingeniero DevOps Senior y Especialista en CI/CD.
+
+**Objetivo:** Crear un pipeline de automatización completo usando **GitHub Actions** para desplegar la aplicación Dockerizada en **Render.com**.
+
+**Requerimientos del Flujo de Trabajo (CI/CD):**
+Genera un archivo `.github/workflows/deploy.yml` que se active al hacer push a la rama `main`. El pipeline debe tener 4 trabajos (jobs) estrictamente secuenciales (usa `needs` para encadenarlos):
+
+1.  **Job 1: Backend Unit Tests**
+   - Configura Python y `uv`.
+   - Ejecuta las pruebas unitarias: `uv run pytest backend/tests/unit`.
+2.  **Job 2: Frontend Unit Tests**
+   - Configura Node.js.
+   - Ejecuta las pruebas del frontend: `npm run test` (o el script correspondiente).
+3.  **Job 3: Integration Tests**
+   - *Este job solo debe correr si el Job 1 y 2 pasaron exitosamente.*
+   - Ejecuta las pruebas de integración: `uv run pytest backend/tests/integration`.
+4.  **Job 4: Continuous Deployment (Render)**
+   - *Solo se ejecuta si TODOS los tests anteriores pasaron.*
+   - Debe activar el despliegue en Render. Puedes usar la acción `gh-action-render-deploy` o un `curl` al Deploy Hook de Render.
+
+**Infraestructura como Código (Render):**
+
+- Crea un archivo `render.yaml` (Blueprint) para configurar el servicio en Render.
+- Debe especificar que es un servicio **Docker** (usando el Dockerfile de la raíz).
+- Debe usar el plan gratuito (free) si es posible especificarlo.
+
+**Entregables:**
+
+- El código de `deploy.yml`.
+- El código de `render.yaml`.
+- **Instrucciones de Secretos:** Dime exactamente qué secretos (ej: `RENDER_deploy_hook_url` o `RENDER_API_KEY`) debo agregar en la configuración de mi repositorio en GitHub para que esto funcione.

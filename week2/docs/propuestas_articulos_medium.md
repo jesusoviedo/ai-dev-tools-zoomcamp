@@ -545,6 +545,435 @@ Además, exploraremos alternativas como GitLab CI, CircleCI, Jenkins y otras pla
 
 ---
 
+## 6. WebSockets en Producción: Construyendo Colaboración en Tiempo Real con FastAPI y React
+
+### Resumen/Descripción
+
+Las aplicaciones colaborativas en tiempo real han transformado la forma en que trabajamos y aprendemos. Desde editores de código compartidos hasta plataformas de entrevistas técnicas, la capacidad de sincronizar cambios instantáneamente entre múltiples usuarios es fundamental. Sin embargo, implementar WebSockets de manera robusta y escalable presenta desafíos únicos que muchos desarrolladores subestiman.
+
+Este artículo explora la implementación práctica de WebSockets usando FastAPI y React, basándose en una aplicación real de plataforma de entrevistas de código. Aprenderás cómo construir un sistema de colaboración en tiempo real que maneja conexiones, desconexiones, reconexión automática y sincronización de estado entre múltiples clientes. Veremos cómo implementar un ConnectionManager robusto, manejar conflictos cuando múltiples usuarios editan simultáneamente, y asegurar que los mensajes se entreguen correctamente incluso cuando hay problemas de red.
+
+El artículo también cubrirá problemas comunes en producción: conexiones que se cuelgan, memoria que se acumula por conexiones no cerradas, manejo de errores cuando el servidor se reinicia, y cómo testear WebSockets de manera efectiva. Incluiremos ejemplos de código real de una aplicación desplegada, mostrando tanto los patrones que funcionan como los errores comunes que debes evitar.
+
+### Conceptos Clave a Investigar
+
+- **WebSockets Fundamentals**
+  - ¿Qué son WebSockets y cuándo usarlos vs HTTP?
+  - Protocolo WebSocket (handshake, frames, close codes)
+  - Ventajas sobre polling y Server-Sent Events (SSE)
+  - Limitaciones y consideraciones de escalabilidad
+
+- **FastAPI WebSocket Implementation**
+  - Configuración de endpoints WebSocket en FastAPI
+  - Manejo de conexiones con `WebSocket` y `WebSocketDisconnect`
+  - Aceptación de conexiones y manejo de mensajes
+  - Broadcasting a múltiples clientes
+  - Gestión de estado de conexiones
+
+- **Connection Management**
+  - Patrón ConnectionManager para gestionar múltiples conexiones
+  - Almacenamiento de conexiones activas (dict, set)
+  - Asociación de usuarios con conexiones WebSocket
+  - Limpieza de conexiones desconectadas
+  - Gestión de salas/rooms para aislar grupos de usuarios
+
+- **Manejo de Mensajes**
+  - Tipos de mensajes (join, code_change, leave, user_joined, user_left)
+  - Validación de mensajes con Pydantic
+  - Serialización/deserialización JSON
+  - Manejo de mensajes inválidos o malformados
+  - Rate limiting para prevenir abuso
+
+- **Sincronización de Estado**
+  - Broadcast de cambios a todos los clientes en una sala
+  - Exclusión del remitente del broadcast
+  - Manejo de conflictos cuando múltiples usuarios editan simultáneamente
+  - Estrategias de resolución de conflictos (last-write-wins, operational transforms)
+  - Sincronización de cursor y posición de edición
+
+- **Reconexión Automática**
+  - Detección de desconexiones en el cliente
+  - Implementación de reconexión con backoff exponencial
+  - Manejo de estado durante la reconexión
+  - Sincronización de estado perdido después de reconexión
+  - Indicadores visuales de estado de conexión
+
+- **Manejo de Errores**
+  - Errores de conexión (timeout, network errors)
+  - Errores de mensajes (invalid JSON, validation errors)
+  - Manejo de excepciones en WebSocket handlers
+  - Logging de errores para debugging
+  - Mensajes de error amigables al usuario
+
+- **Testing de WebSockets**
+  - Testing de conexiones WebSocket con TestClient de FastAPI
+  - Simulación de múltiples clientes conectados
+  - Testing de broadcast de mensajes
+  - Testing de manejo de desconexiones
+  - Testing de reconexión automática
+  - Separación entre tests unitarios e integración
+
+- **Problemas Comunes en Producción**
+  - Conexiones que se quedan abiertas (memory leaks)
+  - Conexiones que se cuelgan sin cerrar correctamente
+  - Problemas de escalabilidad con múltiples servidores
+  - Manejo de reinicios del servidor
+  - Timeouts y límites de conexiones concurrentes
+  - Problemas de CORS con WebSockets
+
+- **Optimización y Performance**
+  - Compresión de mensajes
+  - Batching de mensajes para reducir overhead
+  - Lazy loading de datos grandes
+  - Optimización de memoria para muchas conexiones
+  - Monitoreo de conexiones activas
+
+- **Seguridad**
+  - Autenticación en conexiones WebSocket
+  - Validación de permisos por sala/room
+  - Sanitización de mensajes
+  - Protección contra ataques de amplificación
+  - Rate limiting por usuario
+
+- **React WebSocket Client**
+  - Hook personalizado para manejar conexiones WebSocket
+  - Gestión de estado de conexión (connected, disconnected, reconnecting)
+  - Manejo de eventos (onopen, onmessage, onerror, onclose)
+  - Reconexión automática en el cliente
+  - Sincronización de estado local con servidor
+
+### Ángulos de Enfoque
+
+1. **Tutorial Paso a Paso**: Construir una aplicación colaborativa completa desde cero, mostrando cada componente necesario.
+
+2. **Patrones y Mejores Prácticas**: ConnectionManager, manejo de errores, y arquitectura escalable para WebSockets.
+
+3. **Troubleshooting en Producción**: Problemas comunes y cómo resolverlos, basado en experiencia real.
+
+4. **Testing Completo**: Estrategias para testear WebSockets tanto en backend como frontend.
+
+5. **Escalabilidad**: Cómo escalar aplicaciones WebSocket con múltiples servidores usando Redis o similares.
+
+### Público Objetivo
+
+- Desarrolladores full-stack que quieren implementar colaboración en tiempo real
+- Desarrolladores Python que trabajan con FastAPI
+- Desarrolladores React que necesitan integrar WebSockets
+- Arquitectos que diseñan sistemas colaborativos
+- Desarrolladores que enfrentan problemas con WebSockets en producción
+
+### Recursos de Referencia (del módulo week2 y homework2)
+
+- Homework 2: Plataforma de Entrevistas de Código (implementación real de WebSockets)
+- `homework2/application_development/backend/app/websocket.py`: Implementación del ConnectionManager y endpoints WebSocket
+- `homework2/application_development/backend/tests/integration/test_websocket.py`: Tests de integración para WebSockets
+- `homework2/application_development/frontend/src/hooks/`: Hooks React para manejo de WebSockets
+- README.md: Sección sobre WebSockets y colaboración en tiempo real
+- PROMPTS.md: Prompts utilizados para implementar WebSockets con IA
+
+---
+
+## 7. Ejecución Segura de Código en el Navegador: WASM y Pyodide en Acción
+
+### Resumen/Descripción
+
+Ejecutar código del usuario en el servidor es un riesgo de seguridad enorme. Un simple error de validación puede permitir que código malicioso acceda a tu base de datos, sistema de archivos o red interna. La solución moderna: ejecutar el código directamente en el navegador del usuario usando WebAssembly (WASM). Esto no solo mejora la seguridad, sino que también reduce la carga del servidor y permite ejecución instantánea sin latencia de red.
+
+Este artículo explora cómo implementar ejecución segura de código Python en el navegador usando Pyodide, una distribución completa de Python compilada a WebAssembly. Basándonos en una aplicación real de plataforma de entrevistas de código, aprenderás cómo cargar Pyodide de forma asíncrona, capturar stdout y stderr, manejar errores de ejecución, y crear una experiencia de usuario fluida con indicadores de carga y resultados en tiempo real.
+
+El artículo también cubre problemas comunes que encontrarás: Pyodide tarda varios segundos en cargar inicialmente, la captura de stdout requiere configuración especial, los errores de Python necesitan ser parseados correctamente, y el rendimiento puede ser un problema con código complejo. Veremos cómo optimizar la carga inicial, manejar múltiples ejecuciones, y crear un sistema robusto que funcione incluso cuando Pyodide falla al cargar.
+
+### Conceptos Clave a Investigar
+
+- **WebAssembly (WASM) Fundamentals**
+  - ¿Qué es WebAssembly y por qué es importante?
+  - Ventajas sobre ejecución en servidor (seguridad, latencia, costo)
+  - Limitaciones de WASM en el navegador
+  - Comparación con otras tecnologías (Docker, sandboxing)
+
+- **Pyodide: Python en el Navegador**
+  - ¿Qué es Pyodide y cómo funciona?
+  - Arquitectura de Pyodide (CPython compilado a WASM)
+  - Librerías disponibles en Pyodide
+  - Limitaciones y librerías no soportadas
+  - Versiones y actualizaciones de Pyodide
+
+- **Carga Asíncrona de Pyodide**
+  - Carga desde CDN vs npm package
+  - Lazy loading de Pyodide (solo cuando se necesita)
+  - Indicadores de carga mientras Pyodide se inicializa
+  - Manejo de errores de carga (CDN caído, red lenta)
+  - Caché de Pyodide para cargas subsecuentes
+
+- **Configuración de Pyodide**
+  - Opciones de inicialización (indexURL, fullStdLib)
+  - Configuración de stdout y stderr
+  - Captura de output con `setStdout` y `setStderr`
+  - Buffer de stdout para capturar múltiples prints
+  - Manejo de stderr para errores de Python
+
+- **Ejecución de Código Python**
+  - `runPython()` vs `runPythonAsync()`
+  - Cuándo usar cada método
+  - Manejo de código síncrono y asíncrono
+  - Timeouts y límites de tiempo de ejecución
+  - Cancelación de ejecución
+
+- **Captura de Resultados**
+  - Captura de stdout (print statements)
+  - Captura de valores de retorno
+  - Manejo de resultados None vs valores con output
+  - Formateo de resultados para mostrar al usuario
+  - Manejo de tipos de datos complejos
+
+- **Manejo de Errores**
+  - Parsing de errores de Python (SyntaxError, NameError, etc.)
+  - Extracción de mensajes de error útiles
+  - Líneas de código donde ocurre el error
+  - Tracebacks y cómo mostrarlos al usuario
+  - Errores de tiempo de ejecución vs errores de sintaxis
+
+- **Ejecución de JavaScript**
+  - Ejecución segura de JavaScript en el navegador
+  - Uso de `new Function()` vs `eval()`
+  - Sandboxing de JavaScript
+  - Captura de console.log y console.error
+  - Manejo de errores de JavaScript
+
+- **Performance y Optimización**
+  - Tiempo de carga inicial de Pyodide (~10-15MB)
+  - Optimización de carga (preload, service workers)
+  - Ejecución de código pesado sin bloquear la UI
+  - Web Workers para ejecución en background
+  - Límites de memoria y CPU
+
+- **Experiencia de Usuario**
+  - Indicadores de carga mientras Pyodide se inicializa
+  - Indicadores de ejecución mientras el código corre
+  - Panel de output para mostrar resultados
+  - Panel de errores para mostrar problemas
+  - Botones de ejecutar, limpiar, y resetear
+
+- **Problemas Comunes y Soluciones**
+  - Pyodide no carga (CDN caído, bloqueado por firewall)
+  - Stdout no se captura correctamente
+  - Errores de Python no se muestran bien
+  - Código que tarda mucho en ejecutar
+  - Memoria que se acumula con múltiples ejecuciones
+  - Librerías de Python que no están disponibles
+
+- **Testing de Ejecución de Código**
+  - Mocking de Pyodide en tests
+  - Testing de carga asíncrona
+  - Testing de captura de stdout/stderr
+  - Testing de manejo de errores
+  - Testing de múltiples ejecuciones
+
+- **Seguridad**
+  - Por qué ejecutar en el navegador es más seguro
+  - Limitaciones de seguridad de Pyodide
+  - Prevención de código malicioso (aunque se ejecute en navegador)
+  - Validación de código antes de ejecutar
+  - Timeouts para prevenir código infinito
+
+- **Integración con React**
+  - Hook personalizado para ejecución de código
+  - Estado de carga (loading, ready, error)
+  - Manejo de resultados y errores en componentes
+  - Cleanup de recursos cuando el componente se desmonta
+  - Prevención de memory leaks
+
+### Ángulos de Enfoque
+
+1. **Tutorial Completo**: Implementar ejecución de código Python desde cero, incluyendo carga, ejecución y captura de resultados.
+
+2. **Optimización y Performance**: Técnicas para mejorar tiempos de carga y ejecución, incluyendo preload y Web Workers.
+
+3. **Troubleshooting**: Problemas comunes con Pyodide y cómo resolverlos, basado en experiencia real.
+
+4. **Experiencia de Usuario**: Cómo crear una interfaz fluida para ejecución de código con indicadores y feedback claro.
+
+5. **Comparación de Tecnologías**: Pyodide vs otras soluciones (Skulpt, Brython, transpilación a JavaScript).
+
+### Público Objetivo
+
+- Desarrolladores que necesitan ejecutar código del usuario de forma segura
+- Desarrolladores de plataformas educativas o de entrevistas técnicas
+- Desarrolladores Python interesados en WebAssembly
+- Desarrolladores frontend que quieren ejecutar código en el navegador
+- Desarrolladores que buscan alternativas a ejecución en servidor
+
+### Recursos de Referencia (del módulo week2 y homework2)
+
+- Homework 2: Plataforma de Entrevistas de Código (implementación real con Pyodide)
+- `homework2/application_development/frontend/src/hooks/useCodeRunner.ts`: Hook React para ejecución de código con Pyodide
+- `homework2/application_development/frontend/src/__tests__/unit/useCodeRunner.test.ts`: Tests unitarios del hook de ejecución
+- `homework2/application_development/frontend/src/types/pyodide.d.ts`: Definiciones TypeScript para Pyodide
+- PROMPTS.md: Prompt utilizado para implementar ejecución segura con WASM
+- README.md: Sección sobre ejecución segura de código en el navegador
+
+---
+
+## 8. Testing de Aplicaciones en Tiempo Real: Estrategias para WebSockets y CI/CD
+
+### Resumen/Descripción
+
+Las aplicaciones en tiempo real con WebSockets presentan desafíos únicos para el testing. A diferencia de las APIs REST tradicionales donde puedes hacer una petición y verificar la respuesta, los WebSockets requieren mantener conexiones abiertas, manejar mensajes asíncronos, y simular múltiples clientes interactuando simultáneamente. Además, muchos desarrolladores descubren demasiado tarde que sus tests funcionan localmente pero fallan en CI/CD debido a configuraciones incorrectas o problemas de timing.
+
+Este artículo explora estrategias completas para testear aplicaciones con WebSockets, basándose en una aplicación real de plataforma de entrevistas de código. Aprenderás cómo separar tests unitarios de tests de integración, cómo usar TestClient de FastAPI para simular conexiones WebSocket, cómo testear reconexión automática, y cómo configurar tests para que funcionen tanto localmente como en GitHub Actions.
+
+El artículo también cubre problemas comunes que encontrarás: tests en "watch mode" que bloquean CI/CD, tests que pasan localmente pero fallan en CI, problemas de timing con mensajes asíncronos, y cómo mockear WebSockets en tests unitarios. Veremos cómo estructurar tests para máxima confiabilidad, cómo usar fixtures de pytest efectivamente, y cómo crear tests que sean rápidos pero completos.
+
+### Conceptos Clave a Investigar
+
+- **Estrategia de Testing para WebSockets**
+  - Separación de tests unitarios vs integración
+  - Qué testear en cada nivel
+  - Tests unitarios: lógica de negocio sin conexiones reales
+  - Tests de integración: conexiones WebSocket reales con TestClient
+  - Tests end-to-end: múltiples clientes interactuando
+
+- **FastAPI TestClient para WebSockets**
+  - Uso de `TestClient.websocket_connect()` para simular conexiones
+  - Envío y recepción de mensajes en tests
+  - Manejo de múltiples conexiones simultáneas
+  - Testing de broadcast de mensajes
+  - Testing de desconexiones y reconexiones
+
+- **Tests Unitarios de WebSockets**
+  - Mocking de conexiones WebSocket
+  - Testing de ConnectionManager sin conexiones reales
+  - Testing de lógica de manejo de mensajes
+  - Testing de validación de mensajes
+  - Testing de funciones puras relacionadas con WebSockets
+
+- **Tests de Integración de WebSockets**
+  - Testing de conexión exitosa
+  - Testing de envío y recepción de mensajes
+  - Testing de broadcast a múltiples clientes
+  - Testing de notificaciones de usuarios (join/leave)
+  - Testing de manejo de errores en conexiones
+  - Testing de mensajes inválidos
+
+- **Manejo de Timing y Asincronía**
+  - Problemas de timing en tests asíncronos
+  - Uso de `time.sleep()` para sincronización (cuándo y cuándo no)
+  - Uso de `asyncio` para tests asíncronos
+  - Espera de mensajes con timeouts
+  - Manejo de condiciones de carrera
+
+- **Testing de Reconexión Automática**
+  - Simulación de desconexiones en tests
+  - Testing de lógica de reconexión en el cliente
+  - Testing de sincronización de estado después de reconexión
+  - Testing de manejo de mensajes perdidos
+
+- **Testing de Múltiples Clientes**
+  - Simulación de múltiples conexiones WebSocket
+  - Testing de interacción entre clientes
+  - Testing de aislamiento entre salas/rooms
+  - Testing de broadcast selectivo (excluir remitente)
+
+- **Configuración de Tests para CI/CD**
+  - Problema: Watch mode bloquea CI/CD
+  - Solución: Scripts separados para desarrollo vs CI
+  - Configuración de pytest para CI (sin watch mode)
+  - Configuración de vitest para CI (sin watch mode)
+  - Variables de entorno para tests
+
+- **Problemas Comunes en CI/CD**
+  - Tests que pasan localmente pero fallan en CI
+  - Diferencias de timing entre entornos
+  - Problemas de recursos (memoria, CPU) en CI
+  - Timeouts en tests de integración
+  - Problemas de red en entornos CI
+
+- **Mocking y Fixtures**
+  - Fixtures de pytest para setup/teardown
+  - Fixtures para crear TestClient
+  - Fixtures para crear conexiones WebSocket de prueba
+  - Mocking de dependencias externas
+  - Cleanup de recursos después de tests
+
+- **Testing de Frontend con WebSockets**
+  - Mocking de WebSocket en tests de React
+  - Testing de hooks personalizados para WebSockets
+  - Testing de componentes que usan WebSockets
+  - Testing de reconexión automática en el cliente
+  - Testing de manejo de errores en el cliente
+
+- **Vitest para Testing Frontend**
+  - Configuración de vitest para tests de React
+  - Testing de componentes con react-testing-library
+  - Mocking de WebSocket API en tests
+  - Testing de hooks personalizados
+  - Configuración para CI/CD (sin watch mode)
+
+- **Cobertura de Tests**
+  - Qué cubrir en tests de WebSockets
+  - Cobertura de casos edge (conexiones fallidas, mensajes inválidos)
+  - Cobertura de casos de éxito y error
+  - Métricas de cobertura y cómo interpretarlas
+
+- **Performance de Tests**
+  - Tests rápidos vs tests completos
+  - Paralelización de tests
+  - Optimización de tiempo de ejecución
+  - Balance entre velocidad y confiabilidad
+
+- **Mejores Prácticas**
+  - Estructura de directorios para tests
+  - Naming conventions para tests
+  - Documentación de tests complejos
+  - Mantenimiento de tests cuando cambia el código
+  - Tests como documentación
+
+- **Troubleshooting de Tests**
+  - Debugging de tests que fallan intermitentemente
+  - Logging en tests para debugging
+  - Herramientas para debugging de tests
+  - Análisis de por qué tests fallan en CI pero pasan localmente
+
+- **GitHub Actions para Tests**
+  - Configuración de workflows para ejecutar tests
+  - Ejecución de tests de backend y frontend
+  - Manejo de dependencias en CI
+  - Caching de dependencias para acelerar builds
+  - Notificaciones cuando tests fallan
+
+### Ángulos de Enfoque
+
+1. **Guía Completa de Testing**: Estrategia completa desde tests unitarios hasta integración, con ejemplos prácticos.
+
+2. **CI/CD Ready**: Configuración específica para que tests funcionen en GitHub Actions y otras plataformas CI/CD.
+
+3. **Troubleshooting**: Problemas comunes y cómo resolverlos, basado en experiencia real con tests que fallan en CI.
+
+4. **Mejores Prácticas**: Patrones y anti-patrones para testing de WebSockets, aprendidos de proyectos reales.
+
+5. **Testing de Frontend**: Estrategias específicas para testear componentes React que usan WebSockets.
+
+### Público Objetivo
+
+- Desarrolladores que necesitan testear aplicaciones con WebSockets
+- QA engineers que diseñan estrategias de testing
+- Desarrolladores que enfrentan problemas con tests en CI/CD
+- Desarrolladores full-stack que testean frontend y backend
+- Desarrolladores que quieren mejorar la confiabilidad de sus tests
+
+### Recursos de Referencia (del módulo week2 y homework2)
+
+- Homework 2: Plataforma de Entrevistas de Código (estrategia completa de testing)
+- `homework2/application_development/backend/tests/unit/`: Tests unitarios del backend
+- `homework2/application_development/backend/tests/integration/test_websocket.py`: Tests de integración para WebSockets
+- `homework2/application_development/frontend/src/__tests__/unit/`: Tests unitarios del frontend
+- `homework2/application_development/backend/pyproject.toml`: Configuración de pytest
+- `homework2/application_development/frontend/vite.config.ts`: Configuración de vitest
+- README.md: Sección detallada sobre testing y comandos
+- PROMPTS.md: Prompt utilizado para implementar estrategia de testing
+
+---
+
 ## Notas Finales
 
 Estos artículos están diseñados para ser independientes pero complementarios. Cada uno puede leerse por separado, pero juntos proporcionan una visión completa del desarrollo end-to-end moderno con herramientas de IA.
