@@ -1,0 +1,361 @@
+openapi: 3.1.0
+info:
+  title: Coding Interview Platform API
+  description: |
+    API para plataforma de entrevistas de código online con colaboración en tiempo real.
+    Permite crear sesiones de código, compartir enlaces y colaborar en tiempo real mediante WebSockets.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8000
+    description: Servidor de desarrollo local
+  - url: https://api.example.com
+    description: Servidor de producción
+
+tags:
+  - name: health
+    description: Endpoints de salud del sistema
+  - name: sessions
+    description: Gestión de sesiones de código
+  - name: websocket
+    description: Comunicación en tiempo real mediante WebSockets
+
+paths:
+  /health:
+    get:
+      tags:
+        - health
+      summary: Health check
+      description: Verifica el estado del servidor
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Servidor funcionando correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '500':
+          description: Error del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sessions:
+    post:
+      tags:
+        - sessions
+      summary: Crear nueva sesión de código
+      description: Crea una nueva sesión de código y retorna el ID de la sesión y el enlace para compartir
+      operationId: createSession
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+      responses:
+        '201':
+          description: Sesión creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sessions/{session_id}:
+    get:
+      tags:
+        - sessions
+      summary: Obtener información de sesión
+      description: Obtiene la información de una sesión de código existente
+      operationId: getSession
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          description: ID único de la sesión
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9-_]+$'
+      responses:
+        '200':
+          description: Información de la sesión
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '404':
+          description: Sesión no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ws/{room_id}:
+    get:
+      tags:
+        - websocket
+      summary: Conexión WebSocket para colaboración en tiempo real
+      description: |
+        Establece una conexión WebSocket para colaboración en tiempo real.
+        
+        **Nota:** OpenAPI tiene soporte limitado para WebSockets. Esta es una descripción del endpoint.
+        
+        **Conexión:**
+        - URL: `ws://localhost:8000/ws/{room_id}`
+        - Protocolo: WebSocket
+        
+        **Mensajes de Entrada (Cliente -> Servidor):**
+        - `{"type": "code_change", "code": "código actualizado", "cursor_position": 123}`
+        - `{"type": "join", "username": "nombre_usuario"}`
+        - `{"type": "leave"}`
+        
+        **Mensajes de Salida (Servidor -> Cliente):**
+        - `{"type": "code_change", "code": "código actualizado", "cursor_position": 123, "user_id": "id_usuario"}`
+        - `{"type": "user_joined", "user_id": "id_usuario", "username": "nombre_usuario"}`
+        - `{"type": "user_left", "user_id": "id_usuario"}`
+        - `{"type": "error", "message": "mensaje de error"}`
+      operationId: websocketConnection
+      parameters:
+        - name: room_id
+          in: path
+          required: true
+          description: ID de la sala (room) para la sesión de código
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9-_]+$'
+      responses:
+        '101':
+          description: Switching Protocols (WebSocket upgrade)
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+      properties:
+        status:
+          type: string
+          example: "ok"
+          description: Estado del servidor
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+          description: Timestamp de la verificación
+
+    CreateSessionRequest:
+      type: object
+      properties:
+        language:
+          type: string
+          example: "python"
+          description: Lenguaje de programación inicial
+          enum: [python, javascript, typescript, java, cpp]
+        initial_code:
+          type: string
+          example: "# Escribe tu código aquí"
+          description: Código inicial de la sesión
+        title:
+          type: string
+          example: "Sesión de Entrevista"
+          description: Título opcional de la sesión
+
+    SessionResponse:
+      type: object
+      required:
+        - session_id
+        - room_id
+        - share_url
+        - created_at
+      properties:
+        session_id:
+          type: string
+          example: "abc123xyz"
+          description: ID único de la sesión
+        room_id:
+          type: string
+          example: "room-abc123xyz"
+          description: ID de la sala para WebSocket
+        share_url:
+          type: string
+          format: uri
+          example: "http://localhost:5173/session/abc123xyz"
+          description: URL para compartir la sesión
+        language:
+          type: string
+          example: "python"
+          description: Lenguaje de programación
+        initial_code:
+          type: string
+          example: "# Escribe tu código aquí"
+          description: Código inicial
+        title:
+          type: string
+          example: "Sesión de Entrevista"
+          description: Título de la sesión
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+          description: Fecha de creación
+        active_users:
+          type: integer
+          example: 0
+          description: Número de usuarios activos en la sesión
+          minimum: 0
+
+    CodeChangeMessage:
+      type: object
+      required:
+        - type
+        - code
+      properties:
+        type:
+          type: string
+          enum: [code_change]
+          example: "code_change"
+          description: Tipo de mensaje
+        code:
+          type: string
+          example: "def hello():\n    print('Hello, World!')"
+          description: Código actualizado
+        cursor_position:
+          type: integer
+          example: 45
+          description: Posición del cursor en el editor
+          minimum: 0
+        user_id:
+          type: string
+          example: "user-123"
+          description: ID del usuario que realizó el cambio (solo en mensajes del servidor)
+
+    JoinMessage:
+      type: object
+      required:
+        - type
+        - username
+      properties:
+        type:
+          type: string
+          enum: [join]
+          example: "join"
+          description: Tipo de mensaje
+        username:
+          type: string
+          example: "John Doe"
+          description: Nombre del usuario que se une
+
+    LeaveMessage:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum: [leave]
+          example: "leave"
+          description: Tipo de mensaje
+
+    UserJoinedMessage:
+      type: object
+      required:
+        - type
+        - user_id
+        - username
+      properties:
+        type:
+          type: string
+          enum: [user_joined]
+          example: "user_joined"
+          description: Tipo de mensaje
+        user_id:
+          type: string
+          example: "user-123"
+          description: ID del usuario
+        username:
+          type: string
+          example: "John Doe"
+          description: Nombre del usuario
+
+    UserLeftMessage:
+      type: object
+      required:
+        - type
+        - user_id
+      properties:
+        type:
+          type: string
+          enum: [user_left]
+          example: "user_left"
+          description: Tipo de mensaje
+        user_id:
+          type: string
+          example: "user-123"
+          description: ID del usuario que se desconectó
+
+    ErrorMessage:
+      type: object
+      required:
+        - type
+        - message
+      properties:
+        type:
+          type: string
+          enum: [error]
+          example: "error"
+          description: Tipo de mensaje
+        message:
+          type: string
+          example: "Error al procesar el mensaje"
+          description: Mensaje de error
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: "ValidationError"
+          description: Tipo de error
+        message:
+          type: string
+          example: "El campo session_id es requerido"
+          description: Mensaje descriptivo del error
+        details:
+          type: object
+          description: Detalles adicionales del error
+          additionalProperties: true
+
