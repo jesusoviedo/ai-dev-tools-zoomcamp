@@ -4,7 +4,7 @@
     "description": "Plataforma de colaboración en tiempo real para entrevistas técnicas. Edita código, ejecuta programas y comparte sesiones con candidatos de forma instantánea."
   },
   "header": {
-    "title": "Editor de Código"
+    "description": "Colabora y ejecuta código en tiempo real"
   },
   "language": {
     "label": "Lenguaje:",
@@ -69,6 +69,10 @@
     "selectLanguageFirst": "Por favor, selecciona un lenguaje antes de crear la sesión",
     "languageWillBeLocked": "⚠️ El lenguaje seleccionado ({{language}}) quedará bloqueado al crear la sesión. Los usuarios que accedan con el enlace no podrán cambiarlo.",
     "languageChangeWarning": "⚠️ Si cambias el lenguaje, la sesión compartida será inválida. Deberás crear una nueva sesión.",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "saved": "Código guardado",
+    "saveError": "Error al guardar",
     "shareDialog": {
       "title": "Compartir sesión",
       "description": "Comparte este enlace con otros para colaborar en tiempo real",

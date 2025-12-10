@@ -4,7 +4,7 @@
     "description": "Real-time collaboration platform for technical interviews. Edit code, run programs, and share sessions with candidates instantly."
   },
   "header": {
-    "title": "Code Editor"
+    "description": "Collaborate and run code in real-time"
   },
   "language": {
     "label": "Language:",
@@ -69,6 +69,10 @@
     "selectLanguageFirst": "Please select a language before creating the session",
     "languageWillBeLocked": "⚠️ The selected language ({{language}}) will be locked when creating the session. Users accessing via the link will not be able to change it.",
     "languageChangeWarning": "⚠️ If you change the language, the shared session will become invalid. You will need to create a new session.",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Code saved",
+    "saveError": "Error saving",
     "shareDialog": {
       "title": "Share session",
       "description": "Share this link with others to collaborate in real-time",
