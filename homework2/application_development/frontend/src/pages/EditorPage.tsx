@@ -663,9 +663,7 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
             code={code} 
             language={language} 
             onExecutionSuccess={handleExecutionSuccess}
-            onSave={currentSession ? saveCode : undefined}
-            isSaving={isSaving}
-            canSave={currentSession !== null && code !== lastSavedCodeRef.current && code !== ''}
+            hideControls={true}
           />
         </div>
       </div>
