@@ -1,11 +1,14 @@
 """Main FastAPI application entry point."""
 
+import asyncio
 from pathlib import Path
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.routes import router
 from app.websocket import websocket_endpoint
+from app.database import init_db
+from app.tasks import cleanup_expired_sessions, periodic_cleanup
 
 # Create FastAPI app
 app = FastAPI(
@@ -15,6 +18,16 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Initialize database on startup
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database tables and start background tasks on application startup."""
+    init_db()
+    # Clean up expired sessions on startup
+    cleanup_expired_sessions()
+    # Start periodic cleanup task (runs every hour)
+    asyncio.create_task(periodic_cleanup(interval_hours=1))
 
 # Configure CORS
 # En producción, como frontend y backend están en el mismo origen, podemos ser más permisivos
