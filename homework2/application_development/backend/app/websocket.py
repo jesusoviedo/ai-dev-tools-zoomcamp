@@ -130,6 +130,10 @@ class ConnectionManager:
         
         message_json = message.model_dump_json()
         
+        # Update last activity time for the room
+        if room_id in room_last_activity:
+            room_last_activity[room_id] = datetime.now()
+        
         disconnected = []
         for connection in self.active_connections[room_id]:
             if connection == exclude:
