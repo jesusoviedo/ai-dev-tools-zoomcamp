@@ -36,6 +36,11 @@
   flex: 1;
   height: 100vh;
   overflow: hidden;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.sidebar-expanded {
+  margin-left: 320px;
 }
 
 .editor-section {
@@ -110,29 +115,24 @@
 }
 
 .sidebar {
-  min-width: 320px;
-  flex: 0 0 auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 100vh;
   background: linear-gradient(180deg, #252526 0%, #2d2d30 100%);
   border-right: 1px solid #3e3e3e;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform 0.3s ease;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  z-index: 999;
   transform: translateX(0);
-  opacity: 1;
 }
 
 .sidebar.collapsed {
   transform: translateX(-100%);
-  opacity: 0;
-  pointer-events: none;
-  width: 0 !important;
-  min-width: 0 !important;
-  flex: 0 0 0 !important;
-  border: none;
-  box-shadow: none;
-  overflow: hidden;
 }
 
 @keyframes slideInLeft {

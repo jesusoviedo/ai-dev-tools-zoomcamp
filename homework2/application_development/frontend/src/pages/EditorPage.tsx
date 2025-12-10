@@ -449,7 +449,7 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
           </svg>
         </button>
       )}
-      <div className="main-content">
+      <div className={`main-content ${!isSidebarCollapsed ? 'sidebar-expanded' : ''}`}>
         {/* Sidebar siempre renderizado, controlado por CSS */}
         <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
           <div className="sidebar-header">
