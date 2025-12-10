@@ -5,8 +5,13 @@ export default function AppHeader() {
   const { t, i18n } = useTranslation()
 
   const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng)
-    document.documentElement.lang = lng
+    try {
+      console.log('Changing language to:', lng)
+      i18n.changeLanguage(lng)
+      document.documentElement.lang = lng
+    } catch (error) {
+      console.error('Error changing language:', error)
+    }
   }
 
   return (

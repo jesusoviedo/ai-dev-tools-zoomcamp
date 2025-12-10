@@ -386,7 +386,12 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
             <h2>{t('header.description')}</h2>
             <button 
               className="sidebar-toggle"
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                console.log('Toggle sidebar clicked')
+                setIsSidebarCollapsed(!isSidebarCollapsed)
+              }}
               title={t('common.toggle')}
             >
               <svg 
