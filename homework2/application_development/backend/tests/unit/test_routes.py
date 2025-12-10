@@ -8,12 +8,14 @@ from unittest.mock import patch, MagicMock, Mock
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.routes import (
+    health_check,
     create_session,
     get_session,
     save_code,
     SESSION_DURATION_HOURS
 )
 from app.models import (
+    HealthResponse,
     CreateSessionRequest,
     SessionResponse,
     SaveCodeRequest,
@@ -120,6 +122,32 @@ class TestSessionDurationConfig:
                 del os.environ['SESSION_DURATION_HOURS']
             if original_module:
                 sys.modules['app.routes'] = original_module
+
+
+@pytest.mark.unit
+class TestHealthCheck:
+    """Unit tests for health_check endpoint."""
+    
+    @pytest.mark.asyncio
+    async def test_health_check_returns_health_response(self):
+        """Test health_check returns HealthResponse with default values."""
+        result = await health_check()
+        
+        assert isinstance(result, HealthResponse)
+        assert result.status == "ok"
+        assert isinstance(result.timestamp, datetime)
+    
+    @pytest.mark.asyncio
+    async def test_health_check_timestamp_is_recent(self):
+        """Test health_check timestamp is recent (within last second)."""
+        from datetime import UTC as UTC_TZ
+        
+        result = await health_check()
+        now = datetime.now(UTC_TZ)
+        time_diff = abs((now - result.timestamp).total_seconds())
+        
+        # Timestamp should be within the last second
+        assert time_diff < 1.0
 
 
 @pytest.mark.unit
