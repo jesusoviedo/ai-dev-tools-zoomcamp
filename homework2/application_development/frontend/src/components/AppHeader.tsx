@@ -17,20 +17,15 @@ export default function AppHeader() {
           <p className="app-description">{t('app.description')}</p>
         </div>
         <div className="language-selector-container">
-          <button
-            className={`lang-button ${i18n.language === 'es' ? 'active' : ''}`}
-            onClick={() => changeLanguage('es')}
-            aria-label="Español"
+          <select
+            className="language-selector"
+            value={i18n.language}
+            onChange={(e) => changeLanguage(e.target.value)}
+            aria-label={t('header.languageSelector')}
           >
-            ES
-          </button>
-          <button
-            className={`lang-button ${i18n.language === 'en' ? 'active' : ''}`}
-            onClick={() => changeLanguage('en')}
-            aria-label="English"
-          >
-            EN
-          </button>
+            <option value="es">Español</option>
+            <option value="en">English</option>
+          </select>
         </div>
       </div>
     </header>

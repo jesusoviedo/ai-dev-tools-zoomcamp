@@ -4,7 +4,8 @@
     "description": "Real-time collaboration platform for technical interviews. Edit code, run programs, and share sessions with candidates instantly."
   },
   "header": {
-    "description": "Collaborate and run code in real-time"
+    "description": "Collaborate and run code in real-time",
+    "languageSelector": "Select language"
   },
   "language": {
     "label": "Language:",

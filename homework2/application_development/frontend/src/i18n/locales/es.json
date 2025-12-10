@@ -4,7 +4,8 @@
     "description": "Plataforma de colaboración en tiempo real para entrevistas técnicas. Edita código, ejecuta programas y comparte sesiones con candidatos de forma instantánea."
   },
   "header": {
-    "description": "Colabora y ejecuta código en tiempo real"
+    "description": "Colabora y ejecuta código en tiempo real",
+    "languageSelector": "Seleccionar idioma"
   },
   "language": {
     "label": "Lenguaje:",
