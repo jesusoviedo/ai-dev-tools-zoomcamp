@@ -1,5 +1,6 @@
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useCodeRunner } from '../hooks/useCodeRunner'
+import { useCodeRunnerContext } from '../contexts/CodeRunnerContext'
 import type { SupportedLanguage } from './CodeEditor'
 import './CodeRunner.css'
 
@@ -23,7 +24,21 @@ export default function CodeRunnerActions({
   onRunClick
 }: CodeRunnerActionsProps) {
   const { t } = useTranslation()
-  const { runCode, output, error, isLoading, isPyodideReady, clearOutput } = useCodeRunner()
+  const { runCode, output, error, isLoading, isPyodideReady, clearOutput } = useCodeRunnerContext()
+  const prevOutputRef = useRef<string>('')
+  const prevErrorRef = useRef<string | null>(null)
+
+  // Detect successful execution (output changed and no error)
+  useEffect(() => {
+    if (output !== prevOutputRef.current && !error && output.trim() !== '' && !isLoading) {
+      // Execution was successful
+      if (onExecutionSuccess) {
+        onExecutionSuccess()
+      }
+    }
+    prevOutputRef.current = output
+    prevErrorRef.current = error
+  }, [output, error, isLoading, onExecutionSuccess])
 
   const handleRun = async () => {
     if (onRunClick) {

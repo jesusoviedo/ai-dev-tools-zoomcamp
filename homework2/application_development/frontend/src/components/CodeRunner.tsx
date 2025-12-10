@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useCodeRunner } from '../hooks/useCodeRunner'
+import { useCodeRunnerContext } from '../contexts/CodeRunnerContext'
 import type { SupportedLanguage } from './CodeEditor'
 import ErrorDisplay from './ErrorDisplay'
 import CollapsiblePanel from './CollapsiblePanel'
@@ -19,7 +19,7 @@ interface CodeRunnerProps {
 
 export default function CodeRunner({ code, language, onExecutionSuccess, onSave, isSaving = false, canSave = false, hideControls = false }: CodeRunnerProps) {
   const { t } = useTranslation()
-  const { runCode, output, error, isLoading, isPyodideReady, clearOutput } = useCodeRunner()
+  const { runCode, output, error, isLoading, isPyodideReady, clearOutput } = useCodeRunnerContext()
   const [isOutputExpanded, setIsOutputExpanded] = useState(true)
   const [showAlert, setShowAlert] = useState(false)
   const [alertMessage, setAlertMessage] = useState({ title: '', message: '' })
