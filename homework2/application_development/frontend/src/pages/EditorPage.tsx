@@ -322,13 +322,27 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
 
   const handleSessionLoaded = (session: SessionData) => {
     setCurrentSession(session)
-    if (session.initial_code) {
-      setCode(session.initial_code)
-      lastSavedCodeRef.current = session.initial_code
-    }
+    const initialCode = session.initial_code || ''
+    setCode(initialCode)
+    lastSavedCodeRef.current = initialCode
     if (session.language) {
       setLanguage(session.language as SupportedLanguage)
     }
+  }
+
+  const handleLeaveSession = () => {
+    // Clear session state
+    setCurrentSession(null)
+    setIsSessionCreator(false)
+    setCode('')
+    setLanguage('')
+    lastSavedCodeRef.current = ''
+    // Remove session ID from localStorage
+    localStorage.removeItem('createdSessionId')
+    // Navigate to home page
+    window.history.pushState({}, '', '/')
+    // Reload to reset state completely
+    window.location.reload()
   }
 
   // Cleanup auto-save timer on unmount
