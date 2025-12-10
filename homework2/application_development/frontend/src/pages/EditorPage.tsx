@@ -345,6 +345,44 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
     window.location.reload()
   }
 
+  // Initialize throttles when session is connected
+  useEffect(() => {
+    if (currentSession?.room_id && isConnected && sendMessage) {
+      // Initialize code change throttle
+      codeChangeThrottleRef.current = throttle((code: string, diff?: CodeDiff) => {
+        if (diff) {
+          sendMessage({
+            type: 'code_change',
+            code: code,
+            from_pos: diff.from,
+            to_pos: diff.to,
+            insert: diff.insert,
+            delete_length: diff.deleteLength
+          })
+        } else {
+          sendMessage({
+            type: 'code_change',
+            code: code
+          })
+        }
+        setSyncStatus('synced')
+      }, 100) // Throttle to 100ms
+
+      // Initialize cursor throttle
+      cursorThrottleRef.current = throttle((line: number, column: number) => {
+        sendMessage({
+          type: 'cursor_change',
+          line: line,
+          column: column
+        })
+      }, 200) // Throttle to 200ms
+    } else {
+      // Clean up throttles when disconnected
+      codeChangeThrottleRef.current = null
+      cursorThrottleRef.current = null
+    }
+  }, [currentSession?.room_id, isConnected, sendMessage])
+
   // Cleanup auto-save timer on unmount
   useEffect(() => {
     return () => {
