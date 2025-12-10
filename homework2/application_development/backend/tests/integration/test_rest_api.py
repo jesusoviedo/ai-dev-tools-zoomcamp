@@ -3,12 +3,18 @@
 import pytest
 from fastapi.testclient import TestClient
 from main import app
+from app.database import init_db, drop_db, engine
+from sqlalchemy import text
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def client():
     """Create a test client."""
-    return TestClient(app)
+    # Initialize database before each test
+    init_db()
+    yield TestClient(app)
+    # Clean up after test
+    drop_db()
 
 
 @pytest.mark.integration

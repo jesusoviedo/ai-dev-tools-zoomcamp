@@ -117,7 +117,14 @@ class Session(Base):
     
     def is_expired(self) -> bool:
         """Check if session has expired."""
-        return datetime.now(UTC) > self.expires_at
+        now = datetime.now(UTC)
+        # Ensure expires_at is timezone-aware
+        if self.expires_at.tzinfo is None:
+            # If expires_at is naive, assume it's UTC
+            expires_at_aware = self.expires_at.replace(tzinfo=UTC)
+        else:
+            expires_at_aware = self.expires_at
+        return now > expires_at_aware
     
     def __repr__(self):
         return f"<Session(session_id={self.session_id}, language={self.language}, expires_at={self.expires_at})>"
