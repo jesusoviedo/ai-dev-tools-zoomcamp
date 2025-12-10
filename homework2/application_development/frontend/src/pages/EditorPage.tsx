@@ -413,7 +413,7 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
             onExecutionSuccess={handleExecutionSuccess}
             onSave={currentSession ? saveCode : undefined}
             isSaving={isSaving}
-            canSave={currentSession !== null && code !== lastSavedCodeRef.current}
+            canSave={currentSession !== null && code !== lastSavedCodeRef.current && code !== ''}
           />
         </div>
         {!isSidebarCollapsed && (
