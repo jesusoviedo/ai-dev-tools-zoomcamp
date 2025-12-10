@@ -52,8 +52,6 @@ export default function SessionManager({
   const handleShare = () => {
     if (onShareClick) {
       onShareClick()
-    } else if (currentSession) {
-      setShowShareDialog(true)
     }
   }
 
@@ -70,10 +68,6 @@ export default function SessionManager({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSessionId, currentSession])
-
-  const shareUrl = currentSession 
-    ? sessionService.getShareUrl(currentSession.session_id)
-    : ''
 
   return (
     <>
