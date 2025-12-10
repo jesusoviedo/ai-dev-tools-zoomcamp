@@ -5,6 +5,7 @@ import type { SupportedLanguage } from './CodeEditor'
 import ErrorDisplay from './ErrorDisplay'
 import CollapsiblePanel from './CollapsiblePanel'
 import AlertDialog from './AlertDialog'
+import ScrollButtons from './ScrollButtons'
 import './CodeRunner.css'
 
 interface CodeRunnerProps {
@@ -25,6 +26,7 @@ export default function CodeRunner({ code, language, onExecutionSuccess, onSave,
   const [alertMessage, setAlertMessage] = useState({ title: '', message: '' })
   const prevOutputRef = useRef<string>('')
   const prevErrorRef = useRef<string | null>(null)
+  const outputContainerRef = useRef<HTMLDivElement>(null)
 
   // Detect successful execution (output changed and no error)
   useEffect(() => {
@@ -180,8 +182,11 @@ export default function CodeRunner({ code, language, onExecutionSuccess, onSave,
             defaultCollapsed={!isOutputExpanded}
             icon={OutputIcon}
           >
-            <div className="output-success-content">
-              <pre className="output-content">{output}</pre>
+            <div className="output-success-content-wrapper">
+              <div className="output-success-content" ref={outputContainerRef}>
+                <pre className="output-content">{output}</pre>
+              </div>
+              <ScrollButtons containerRef={outputContainerRef} />
             </div>
           </CollapsiblePanel>
         )}

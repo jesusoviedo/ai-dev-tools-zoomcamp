@@ -144,12 +144,22 @@
   animation: spin 1s linear infinite;
 }
 
-.output-success-content {
+.output-success-content-wrapper {
+  position: relative;
   background-color: rgba(78, 201, 176, 0.05);
   border-radius: 6px;
+  max-height: min(400px, calc(100vh - 300px));
+  overflow: hidden;
+}
+
+.output-success-content {
+  background-color: transparent;
+  border-radius: 6px;
   padding: 12px;
-  max-height: 400px;
+  max-height: min(400px, calc(100vh - 300px));
   overflow-y: auto;
+  overflow-x: auto;
+  padding-right: 50px; /* Space for scroll buttons */
 }
 
 .output-content {

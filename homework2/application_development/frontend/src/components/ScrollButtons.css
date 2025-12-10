@@ -1,0 +1,70 @@
+.scroll-buttons-container {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.scroll-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2d2d30 0%, #1e1e1e 100%);
+  border: 1px solid #3e3e3e;
+  color: #cccccc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+.scroll-button:hover {
+  background: linear-gradient(135deg, #37373d 0%, #2d2d30 100%);
+  border-color: #007acc;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.4);
+  transform: scale(1.1);
+}
+
+.scroll-button:active {
+  transform: scale(0.95) translateY(-50%);
+}
+
+.scroll-button-up {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.scroll-button-down {
+  animation: fadeInDown 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
