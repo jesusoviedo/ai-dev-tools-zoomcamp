@@ -628,7 +628,28 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
               )}
             </div>
           </div>
-        )}
+        </div>
+        <div className={`editor-section ${isSidebarCollapsed ? 'expanded' : ''}`}>
+          <div className="editor-header">
+            <h2>{t('header.description')}</h2>
+          </div>
+          <CodeEditor 
+            value={code} 
+            onChange={handleCodeChange}
+            language={language}
+            onLanguageChange={handleLanguageChange}
+            isLanguageLocked={currentSession !== null && !isSessionCreator}
+            onLanguageChangeAttempt={handleLanguageChangeAttempt}
+          />
+          <CodeRunner 
+            code={code} 
+            language={language} 
+            onExecutionSuccess={handleExecutionSuccess}
+            onSave={currentSession ? saveCode : undefined}
+            isSaving={isSaving}
+            canSave={currentSession !== null && code !== lastSavedCodeRef.current && code !== ''}
+          />
+        </div>
       </div>
 
       <AlertDialog
