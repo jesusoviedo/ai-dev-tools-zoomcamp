@@ -271,4 +271,92 @@ class TestConnectionManager:
         # Disconnected user should be cleaned up
         assert websocket not in manager.active_connections.get("room-123", set())
         assert websocket not in manager.user_info
+    
+    @pytest.mark.asyncio
+    async def test_connect_broadcasts_user_joined(self):
+        """Test that connect broadcasts user_joined to other users (line 46)."""
+        manager = ConnectionManager()
+        websocket1 = AsyncMock()
+        websocket1.accept = AsyncMock()
+        websocket1.send_text = AsyncMock()
+        websocket2 = AsyncMock()
+        websocket2.accept = AsyncMock()
+        websocket2.send_text = AsyncMock()
+        
+        # Connect first user
+        user_id1 = await manager.connect(websocket1, "room-123", "user1")
+        
+        # Connect second user - first user should receive notification
+        user_id2 = await manager.connect(websocket2, "room-123", "user2")
+        
+        # websocket1 should have received user_joined for user2
+        # (broadcast_user_joined excludes the sender, so websocket2 doesn't receive their own)
+        assert websocket1.send_text.called
+        call_args = websocket1.send_text.call_args[0][0]
+        assert "user_joined" in call_args
+        assert "user2" in call_args
+    
+    @pytest.mark.asyncio
+    async def test_disconnect_returns_none_when_not_connected(self):
+        """Test disconnect returns None when websocket not in user_info (line 52-53)."""
+        manager = ConnectionManager()
+        websocket = AsyncMock()
+        
+        result = manager.disconnect(websocket)
+        
+        assert result is None
+    
+    @pytest.mark.asyncio
+    async def test_broadcast_code_change_empty_room_after_disconnect(self):
+        """Test broadcast_code_change when room becomes empty after disconnect cleanup."""
+        manager = ConnectionManager()
+        websocket = AsyncMock()
+        websocket.send_text = AsyncMock(side_effect=Exception("Connection closed"))
+        manager.active_connections["room-123"] = {websocket}
+        manager.user_info[websocket] = {
+            "user_id": "user-123",
+            "username": "testuser",
+            "room_id": "room-123"
+        }
+        
+        await manager.broadcast_code_change("room-123", "print('test')", 10, "user-123")
+        
+        # Room should be removed after disconnect cleanup (line 63-64)
+        assert "room-123" not in manager.active_connections
+    
+    @pytest.mark.asyncio
+    async def test_broadcast_user_joined_empty_room_after_disconnect(self):
+        """Test broadcast_user_joined when room becomes empty after disconnect cleanup."""
+        manager = ConnectionManager()
+        websocket = AsyncMock()
+        websocket.send_text = AsyncMock(side_effect=Exception("Connection closed"))
+        manager.active_connections["room-123"] = {websocket}
+        manager.user_info[websocket] = {
+            "user_id": "user-123",
+            "username": "testuser",
+            "room_id": "room-123"
+        }
+        
+        await manager.broadcast_user_joined("room-123", "user-456", "newuser")
+        
+        # Room should be removed after disconnect cleanup
+        assert "room-123" not in manager.active_connections
+    
+    @pytest.mark.asyncio
+    async def test_broadcast_user_left_empty_room_after_disconnect(self):
+        """Test broadcast_user_left when room becomes empty after disconnect cleanup."""
+        manager = ConnectionManager()
+        websocket = AsyncMock()
+        websocket.send_text = AsyncMock(side_effect=Exception("Connection closed"))
+        manager.active_connections["room-123"] = {websocket}
+        manager.user_info[websocket] = {
+            "user_id": "user-123",
+            "username": "testuser",
+            "room_id": "room-123"
+        }
+        
+        await manager.broadcast_user_left("room-123", "user-456")
+        
+        # Room should be removed after disconnect cleanup
+        assert "room-123" not in manager.active_connections
 
