@@ -11,9 +11,12 @@ interface CodeRunnerProps {
   code: string
   language: SupportedLanguage
   onExecutionSuccess?: () => void
+  onSave?: () => void
+  isSaving?: boolean
+  canSave?: boolean
 }
 
-export default function CodeRunner({ code, language, onExecutionSuccess }: CodeRunnerProps) {
+export default function CodeRunner({ code, language, onExecutionSuccess, onSave, isSaving = false, canSave = false }: CodeRunnerProps) {
   const { t } = useTranslation()
   const { runCode, output, error, isLoading, isPyodideReady, clearOutput } = useCodeRunner()
   const [isOutputExpanded, setIsOutputExpanded] = useState(true)
@@ -109,6 +112,34 @@ export default function CodeRunner({ code, language, onExecutionSuccess }: CodeR
               </>
             )}
           </button>
+          {onSave && (
+            <button
+              className="save-button"
+              onClick={onSave}
+              disabled={isSaving || !canSave}
+              title={!canSave ? t('session.saved') : t('session.save')}
+            >
+              {isSaving ? (
+                <>
+                  <svg className="button-spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="31.416" strokeDashoffset="31.416" strokeLinecap="round">
+                      <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416;0 31.416" repeatCount="indefinite"/>
+                      <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416;-31.416" repeatCount="indefinite"/>
+                    </circle>
+                  </svg>
+                  {t('session.saving')}
+                </>
+              ) : (
+                <>
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  {t('session.save')}
+                </>
+              )}
+            </button>
+          )}
           {(output || error) && (
             <button className="clear-button" onClick={clearOutput}>
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">

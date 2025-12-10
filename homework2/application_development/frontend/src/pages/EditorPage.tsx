@@ -397,7 +397,14 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
             isLanguageLocked={currentSession !== null && !isSessionCreator}
             onLanguageChangeAttempt={handleLanguageChangeAttempt}
           />
-          <CodeRunner code={code} language={language} onExecutionSuccess={handleExecutionSuccess} />
+          <CodeRunner 
+            code={code} 
+            language={language} 
+            onExecutionSuccess={handleExecutionSuccess}
+            onSave={currentSession ? saveCode : undefined}
+            isSaving={isSaving}
+            canSave={currentSession !== null && code !== lastSavedCodeRef.current}
+          />
         </div>
         {!isSidebarCollapsed && (
           <div className="sidebar">
