@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCodeRunner } from '../hooks/useCodeRunner'
 import type { SupportedLanguage } from './CodeEditor'
