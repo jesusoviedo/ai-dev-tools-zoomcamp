@@ -9,6 +9,7 @@ export interface SessionData {
   title: string | null
   created_at: string
   active_users: number
+  last_saved_at?: string | null
 }
 
 export interface CreateSessionRequest {
@@ -60,6 +61,34 @@ class SessionService {
   getShareUrl(sessionId: string): string {
     const baseUrl = window.location.origin
     return `${baseUrl}/session/${sessionId}`
+  }
+
+  async saveCode(sessionId: string, code: string): Promise<void> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}/code`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }),
+      })
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Session not found')
+        }
+        if (response.status === 410) {
+          throw new Error('Session has expired')
+        }
+        throw new Error(`Failed to save code: ${response.statusText}`)
+      }
+
+      // Return void on success
+      await response.json()
+    } catch (error) {
+      console.error('Error saving code:', error)
+      throw error
+    }
   }
 }
 
