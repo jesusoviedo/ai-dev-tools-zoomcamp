@@ -1,8 +1,11 @@
-"""Pydantic models for request/response validation."""
+"""Pydantic models for request/response validation and SQLAlchemy ORM models."""
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Optional
 from pydantic import BaseModel, Field
+from sqlalchemy import Column, String, Integer, DateTime, Text, Index
+from sqlalchemy.sql import func
+from app.database import Base
 
 
 class HealthResponse(BaseModel):
@@ -38,6 +41,12 @@ class SessionResponse(BaseModel):
     title: Optional[str] = Field(default=None, description="Título de la sesión")
     created_at: datetime = Field(description="Fecha de creación")
     active_users: int = Field(default=0, ge=0, description="Número de usuarios activos en la sesión")
+    last_saved_at: Optional[datetime] = Field(default=None, description="Fecha del último guardado")
+
+
+class SaveCodeRequest(BaseModel):
+    """Request model for saving code."""
+    code: str = Field(description="Código a guardar")
 
 
 class ErrorResponse(BaseModel):
@@ -84,4 +93,32 @@ class ErrorMessage(BaseModel):
     """WebSocket error message."""
     type: str = Field(default="error", description="Tipo de mensaje")
     message: str = Field(description="Mensaje de error")
+
+
+# SQLAlchemy ORM Models
+class Session(Base):
+    """SQLAlchemy model for sessions table."""
+    __tablename__ = "sessions"
+    
+    session_id = Column(String, primary_key=True, index=True)
+    room_id = Column(String, nullable=False, index=True)
+    language = Column(String, nullable=False)
+    code = Column(Text, nullable=False)
+    title = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    expires_at = Column(DateTime(timezone=True), nullable=False, index=True)
+    last_saved_at = Column(DateTime(timezone=True), nullable=True)
+    active_users = Column(Integer, default=0, nullable=False)
+    
+    # Index for efficient expiration queries
+    __table_args__ = (
+        Index('idx_expires_at', 'expires_at'),
+    )
+    
+    def is_expired(self) -> bool:
+        """Check if session has expired."""
+        return datetime.now(UTC) > self.expires_at
+    
+    def __repr__(self):
+        return f"<Session(session_id={self.session_id}, language={self.language}, expires_at={self.expires_at})>"
 
