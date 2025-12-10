@@ -127,13 +127,6 @@ export default function SessionManager({
           </>
         )}
       </div>
-
-      <ShareDialog
-        isOpen={showShareDialog}
-        onClose={() => setShowShareDialog(false)}
-        shareUrl={shareUrl}
-        language={currentSession?.language}
-      />
     </>
   )
 }
