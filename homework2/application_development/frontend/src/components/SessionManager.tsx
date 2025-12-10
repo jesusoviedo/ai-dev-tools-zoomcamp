@@ -19,7 +19,8 @@ export default function SessionManager({
   currentSessionId,
   currentLanguage = '',
   isSessionCreator = false,
-  showInSidebar = false
+  showInSidebar = false,
+  onShareClick
 }: SessionManagerProps) {
   const { t } = useTranslation()
   const [isCreating, setIsCreating] = useState(false)
@@ -42,7 +43,7 @@ export default function SessionManager({
       })
       setCurrentSession(session)
       onSessionCreated(session)
-      setShowShareDialog(true)
+      // Share dialog is now handled by parent component
     } catch (error) {
       console.error('Error creating session:', error)
     } finally {
@@ -51,7 +52,9 @@ export default function SessionManager({
   }
 
   const handleShare = () => {
-    if (currentSession) {
+    if (onShareClick) {
+      onShareClick()
+    } else if (currentSession) {
       setShowShareDialog(true)
     }
   }
