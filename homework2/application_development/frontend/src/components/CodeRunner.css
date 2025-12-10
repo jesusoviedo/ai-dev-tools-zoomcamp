@@ -148,7 +148,7 @@
   position: relative;
   background-color: rgba(78, 201, 176, 0.05);
   border-radius: 6px;
-  max-height: min(400px, calc(100vh - 300px));
+  max-height: min(400px, calc(100vh - 400px));
   overflow: hidden;
 }
 
@@ -156,7 +156,7 @@
   background-color: transparent;
   border-radius: 6px;
   padding: 12px;
-  max-height: min(400px, calc(100vh - 300px));
+  max-height: min(400px, calc(100vh - 400px));
   overflow-y: auto;
   overflow-x: auto;
   padding-right: 50px; /* Space for scroll buttons */

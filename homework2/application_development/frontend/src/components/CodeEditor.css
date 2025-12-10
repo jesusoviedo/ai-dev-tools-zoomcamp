@@ -7,18 +7,27 @@
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 20px;
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.3),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid #2d2d30;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .code-editor-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
-  padding: 12px 16px;
+  margin-bottom: 0;
+  padding: 14px 18px;
   background: linear-gradient(135deg, #2d2d30 0%, #252526 100%);
   border: 1px solid #3e3e3e;
+  border-bottom: 1px solid #1a1a1a;
   border-radius: 8px 8px 0 0;
   justify-content: space-between;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .code-editor-header-actions {
@@ -183,10 +192,14 @@
 .code-mirror-editor {
   flex: 1;
   overflow: auto;
-  border: 1px solid #3e3e3e;
+  border: 1px solid #2d2d30;
   border-top: none;
   border-radius: 0 0 8px 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(0, 0, 0, 0.1);
+  background-color: #1e1e1e;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .code-mirror-editor .cm-editor {
