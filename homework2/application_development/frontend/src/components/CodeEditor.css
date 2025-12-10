@@ -18,6 +18,14 @@
   background: linear-gradient(135deg, #2d2d30 0%, #252526 100%);
   border: 1px solid #3e3e3e;
   border-radius: 8px 8px 0 0;
+  justify-content: space-between;
+}
+
+.code-editor-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
 }
 
 .language-label {

@@ -14,6 +14,7 @@ interface CodeRunnerProps {
   onSave?: () => void
   isSaving?: boolean
   canSave?: boolean
+  hideControls?: boolean
 }
 
 export default function CodeRunner({ code, language, onExecutionSuccess, onSave, isSaving = false, canSave = false }: CodeRunnerProps) {
@@ -86,7 +87,8 @@ export default function CodeRunner({ code, language, onExecutionSuccess, onSave,
   return (
     <>
       <div className="code-runner-container">
-        <div className="code-runner-controls">
+        {!hideControls && (
+          <div className="code-runner-controls">
           <button
             className="run-button"
             onClick={handleRun}
