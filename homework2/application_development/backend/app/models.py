@@ -60,9 +60,15 @@ class ErrorResponse(BaseModel):
 class CodeChangeMessage(BaseModel):
     """WebSocket message for code changes."""
     type: str = Field(default="code_change", description="Tipo de mensaje")
-    code: str = Field(description="Código actualizado")
+    code: Optional[str] = Field(default=None, description="Código completo (fallback)")
     cursor_position: Optional[int] = Field(default=None, ge=0, description="Posición del cursor")
     user_id: Optional[str] = Field(default=None, description="ID del usuario (solo en mensajes del servidor)")
+    # Diff fields for incremental updates
+    from_pos: Optional[int] = Field(default=None, ge=0, description="Posición inicial del cambio (diff)")
+    to_pos: Optional[int] = Field(default=None, ge=0, description="Posición final del cambio (diff)")
+    insert: Optional[str] = Field(default=None, description="Texto insertado (diff)")
+    delete_length: Optional[int] = Field(default=None, ge=0, description="Cantidad de caracteres eliminados (diff)")
+    timestamp: Optional[datetime] = Field(default=None, description="Timestamp del cambio para resolución de conflictos")
 
 
 class JoinMessage(BaseModel):
@@ -93,6 +99,14 @@ class ErrorMessage(BaseModel):
     """WebSocket error message."""
     type: str = Field(default="error", description="Tipo de mensaje")
     message: str = Field(description="Mensaje de error")
+
+
+class CursorChangeMessage(BaseModel):
+    """WebSocket message for cursor position changes."""
+    type: str = Field(default="cursor_change", description="Tipo de mensaje")
+    line: int = Field(ge=1, description="Número de línea (1-indexed)")
+    column: int = Field(ge=0, description="Columna (0-indexed)")
+    user_id: Optional[str] = Field(default=None, description="ID del usuario (solo en mensajes del servidor)")
 
 
 # SQLAlchemy ORM Models
