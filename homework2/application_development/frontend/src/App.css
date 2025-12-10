@@ -207,7 +207,28 @@
   justify-content: center;
 }
 
-.sidebar-close:hover {
+.sidebar-close.hamburger-close {
+  padding: 8px;
+  border: 1px solid #3e3e3e;
+  border-radius: 6px;
+  background: transparent;
+  color: #cccccc;
+}
+
+.sidebar-close.hamburger-close:hover {
+  background: linear-gradient(135deg, #37373d 0%, #2d2d30 100%);
+  border-color: #007acc;
+  color: #007acc;
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+  transform: translateY(-1px);
+}
+
+.sidebar-close.hamburger-close:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-close:hover:not(.hamburger-close) {
   background-color: #37373d;
   color: #ffffff;
 }
