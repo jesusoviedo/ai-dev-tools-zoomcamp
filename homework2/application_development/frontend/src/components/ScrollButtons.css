@@ -35,7 +35,7 @@
 }
 
 .scroll-button:active {
-  transform: scale(0.95) translateY(-50%);
+  transform: scale(0.95);
 }
 
 .scroll-button-up {
