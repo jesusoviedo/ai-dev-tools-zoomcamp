@@ -8,6 +8,9 @@ import AlertDialog from '../components/AlertDialog'
 import SaveNotification from '../components/SaveNotification'
 import { sessionService, type SessionData } from '../services/sessionService'
 import { useWebSocket, type WebSocketMessage } from '../hooks/useWebSocket'
+import { throttle, debounce } from '../utils/throttle'
+import { calculateDiff, applyDiff, canApplyDiff, shouldSendFullCode, type CodeDiff } from '../utils/diffUtils'
+import { resolveConflict, type ConflictInfo } from '../utils/conflictResolver'
 import '../App.css'
 
 interface EditorPageProps {
@@ -26,25 +29,107 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
   const [showLanguageChangeWarning, setShowLanguageChangeWarning] = useState(false)
   const [showSaveNotification, setShowSaveNotification] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'pending'>('synced')
+  const [cursorPosition, setCursorPosition] = useState<{ line: number; column: number } | null>(null)
+  const [conflictNotification, setConflictNotification] = useState<string | null>(null)
   const isLocalChangeRef = useRef(false)
+  const pendingLocalDiffRef = useRef<CodeDiff | null>(null)
   const pendingLanguageChangeRef = useRef<SupportedLanguage | null>(null)
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null)
   const lastSavedCodeRef = useRef<string>('')
+  const pendingCodeChangeRef = useRef<string | null>(null)
+  const codeChangeThrottleRef = useRef<ReturnType<typeof throttle> | null>(null)
+  const cursorThrottleRef = useRef<ReturnType<typeof throttle> | null>(null)
+  const previousCodeRef = useRef<string>('')
 
   // Handle WebSocket messages
   const handleWebSocketMessage = useCallback((message: WebSocketMessage) => {
     if (message.type === 'code_change') {
       // Only update if change came from another user
-      if (!isLocalChangeRef.current && message.code !== undefined) {
-        setCode(message.code)
+      if (!isLocalChangeRef.current) {
+        // Check for conflicts with pending local changes
+        const localDiff = pendingLocalDiffRef.current
+        let remoteDiff: CodeDiff | null = null
+        
+        // Try to apply diff if available
+        if (message.from_pos !== undefined && message.to_pos !== undefined && message.insert !== undefined) {
+          remoteDiff = {
+            from: message.from_pos,
+            to: message.to_pos,
+            insert: message.insert,
+            deleteLength: message.delete_length
+          }
+          
+          // Resolve conflicts if there's a pending local change
+          if (localDiff) {
+            const conflictInfo = resolveConflict(localDiff, remoteDiff)
+            
+            if (conflictInfo.hasConflict && !conflictInfo.canResolve) {
+              // Show conflict notification
+              setConflictNotification(conflictInfo.message || 'Conflicto detectado. Se aplicará el cambio remoto.')
+              setTimeout(() => setConflictNotification(null), 5000)
+              
+              // Apply remote change (Last-Write-Wins)
+              if (canApplyDiff(code, remoteDiff)) {
+                try {
+                  const newCode = applyDiff(code, remoteDiff)
+                  setCode(newCode)
+                  previousCodeRef.current = newCode
+                  pendingLocalDiffRef.current = null
+                } catch (error) {
+                  console.error('Error applying diff:', error)
+                  if (message.code) {
+                    setCode(message.code)
+                    previousCodeRef.current = message.code
+                  }
+                }
+              } else if (message.code) {
+                setCode(message.code)
+                previousCodeRef.current = message.code
+              }
+              return
+            } else if (conflictInfo.resolvedDiff) {
+              // Conflict resolved, use transformed diff
+              remoteDiff = conflictInfo.resolvedDiff
+            }
+          }
+          
+          // Apply diff
+          if (canApplyDiff(code, remoteDiff)) {
+            try {
+              const newCode = applyDiff(code, remoteDiff)
+              setCode(newCode)
+              previousCodeRef.current = newCode
+              pendingLocalDiffRef.current = null
+            } catch (error) {
+              console.error('Error applying diff, falling back to full code:', error)
+              if (message.code) {
+                setCode(message.code)
+                previousCodeRef.current = message.code
+              }
+            }
+          } else if (message.code) {
+            setCode(message.code)
+            previousCodeRef.current = message.code
+          }
+        } else if (message.code !== undefined) {
+          // No diff available, use full code
+          setCode(message.code)
+          previousCodeRef.current = message.code
+          pendingLocalDiffRef.current = null
+        }
       }
       isLocalChangeRef.current = false
+    } else if (message.type === 'cursor_change') {
+      // Handle remote cursor changes (will be implemented in cursor visualization)
+      // For now, just log it
+      console.log('Remote cursor change:', message)
     } else if (message.type === 'user_joined') {
       setActiveUsers(prev => prev + 1)
     } else if (message.type === 'user_left') {
       setActiveUsers(prev => Math.max(1, prev - 1)) // Minimum 1 (current user)
     }
-  }, [])
+  }, [code])
 
   // Reset active users when session changes
   useEffect(() => {
@@ -103,26 +188,61 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
     }
   }, [currentSession, code, isSaving])
 
-  // Send code changes to WebSocket
+  // Send code changes to WebSocket with throttling and debouncing
   const handleCodeChange = (newCode: string) => {
     isLocalChangeRef.current = true
     setCode(newCode)
     
-    if (currentSession?.room_id && isConnected) {
-      sendMessage({
-        type: 'code_change',
-        code: newCode,
-        cursor_position: 0
-      })
+    // Calculate diff between previous and new code
+    const previousCode = previousCodeRef.current || code
+    const diff = calculateDiff(previousCode, newCode)
+    
+    // Store pending change
+    pendingCodeChangeRef.current = newCode
+    
+    // Use debouncing for large changes (> 100 characters)
+    const changeSize = Math.abs(newCode.length - (previousCode.length || 0))
+    const isLargeChange = changeSize > 100
+    
+    if (currentSession?.room_id && isConnected && codeChangeThrottleRef.current) {
+      setSyncStatus('pending')
+      
+      if (isLargeChange) {
+        // Debounce large changes (like paste operations)
+        // Clear existing timer
+        if (autoSaveTimerRef.current) {
+          clearTimeout(autoSaveTimerRef.current)
+        }
+        
+        // Set debounced send
+        autoSaveTimerRef.current = setTimeout(() => {
+          if (pendingCodeChangeRef.current && codeChangeThrottleRef.current) {
+            const finalDiff = calculateDiff(previousCodeRef.current || previousCode, pendingCodeChangeRef.current)
+            codeChangeThrottleRef.current(pendingCodeChangeRef.current, finalDiff || undefined)
+            previousCodeRef.current = pendingCodeChangeRef.current
+            pendingCodeChangeRef.current = null
+          }
+        }, 300) // 300ms debounce for large changes
+      } else {
+        // Throttle small changes with diff
+        if (diff) {
+          pendingLocalDiffRef.current = diff
+        }
+        codeChangeThrottleRef.current(newCode, diff || undefined)
+        previousCodeRef.current = newCode
+      }
+    } else {
+      // Update previous code even if not connected
+      previousCodeRef.current = newCode
     }
     
     // Reset auto-save timer on code change
-    if (autoSaveTimerRef.current) {
+    if (autoSaveTimerRef.current && !isLargeChange) {
       clearTimeout(autoSaveTimerRef.current)
     }
     
     // Set auto-save timer for 2 minutes of inactivity
-    if (currentSession) {
+    if (currentSession && !isLargeChange) {
       autoSaveTimerRef.current = setTimeout(() => {
         saveCode()
       }, 2 * 60 * 1000) // 2 minutes
@@ -452,6 +572,24 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
         show={showSaveNotification}
         onHide={() => setShowSaveNotification(false)}
       />
+      
+      {conflictNotification && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          backgroundColor: '#ff6b6b',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          zIndex: 1000,
+          maxWidth: '300px',
+          fontSize: '14px'
+        }}>
+          {conflictNotification}
+        </div>
+      )}
     </div>
   )
 }
