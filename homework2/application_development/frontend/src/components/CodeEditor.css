@@ -3,6 +3,7 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  max-height: calc(100vh - 280px);
   background-color: #1e1e1e;
   border-radius: 8px;
   overflow: hidden;
@@ -191,7 +192,9 @@
 
 .code-mirror-editor {
   flex: 1;
-  overflow: auto;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
   border: 1px solid #2d2d30;
   border-top: none;
   border-radius: 0 0 8px 8px;
@@ -204,13 +207,18 @@
 
 .code-mirror-editor .cm-editor {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .code-mirror-editor .cm-scroller {
-  overflow: auto;
+  overflow: auto !important;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
-/* Scrollbar personalizado para el editor - Selectores más específicos */
+/* Scrollbar personalizado para el editor - Siempre visibles y profesionales */
 .code-mirror-editor::-webkit-scrollbar,
 .code-mirror-editor .cm-scroller::-webkit-scrollbar,
 .code-mirror-editor .cm-editor::-webkit-scrollbar,
@@ -219,8 +227,8 @@
 .code-editor-container .code-mirror-editor .cm-scroller::-webkit-scrollbar,
 .code-editor-container .code-mirror-editor .cm-editor::-webkit-scrollbar,
 .code-editor-container .code-mirror-editor .cm-editor .cm-scroller::-webkit-scrollbar {
-  width: 10px !important;
-  height: 10px !important;
+  width: 12px !important;
+  height: 12px !important;
 }
 
 .code-mirror-editor::-webkit-scrollbar-track,
@@ -232,7 +240,7 @@
 .code-editor-container .code-mirror-editor .cm-editor::-webkit-scrollbar-track,
 .code-editor-container .code-mirror-editor .cm-editor .cm-scroller::-webkit-scrollbar-track {
   background: #1e1e1e !important;
-  border-radius: 5px !important;
+  border-radius: 6px !important;
 }
 
 .code-mirror-editor::-webkit-scrollbar-thumb,
@@ -243,10 +251,11 @@
 .code-editor-container .code-mirror-editor .cm-scroller::-webkit-scrollbar-thumb,
 .code-editor-container .code-mirror-editor .cm-editor::-webkit-scrollbar-thumb,
 .code-editor-container .code-mirror-editor .cm-editor .cm-scroller::-webkit-scrollbar-thumb {
-  background: #3e3e3e !important;
-  border-radius: 5px !important;
+  background: #4e4e4e !important;
+  border-radius: 6px !important;
   border: 2px solid #1e1e1e !important;
   transition: background 0.2s ease !important;
+  opacity: 0.8 !important;
 }
 
 .code-mirror-editor::-webkit-scrollbar-thumb:hover,
@@ -257,7 +266,8 @@
 .code-editor-container .code-mirror-editor .cm-scroller::-webkit-scrollbar-thumb:hover,
 .code-editor-container .code-mirror-editor .cm-editor::-webkit-scrollbar-thumb:hover,
 .code-editor-container .code-mirror-editor .cm-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
-  background: #4e4e4e !important;
+  background: #5e5e5e !important;
+  opacity: 1 !important;
 }
 
 .code-mirror-editor::-webkit-scrollbar-corner,
@@ -271,7 +281,7 @@
   background: #1e1e1e !important;
 }
 
-/* Firefox scrollbar */
+/* Firefox scrollbar - Siempre visibles */
 .code-mirror-editor,
 .code-mirror-editor .cm-scroller,
 .code-mirror-editor .cm-editor,
@@ -281,6 +291,7 @@
 .code-editor-container .code-mirror-editor .cm-editor,
 .code-editor-container .code-mirror-editor .cm-editor .cm-scroller {
   scrollbar-width: thin !important;
-  scrollbar-color: #3e3e3e #1e1e1e !important;
+  scrollbar-color: #4e4e4e #1e1e1e !important;
+  scrollbar-gutter: stable !important;
 }
 

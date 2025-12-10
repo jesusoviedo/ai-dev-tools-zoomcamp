@@ -50,7 +50,8 @@
   padding: 24px;
   background: linear-gradient(180deg, #1e1e1e 0%, #252526 100%);
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: all 0.3s ease;
   position: relative;
 }
