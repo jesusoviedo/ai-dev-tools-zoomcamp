@@ -10,14 +10,29 @@ import './CodeRunner.css'
 interface CodeRunnerProps {
   code: string
   language: SupportedLanguage
+  onExecutionSuccess?: () => void
 }
 
-export default function CodeRunner({ code, language }: CodeRunnerProps) {
+export default function CodeRunner({ code, language, onExecutionSuccess }: CodeRunnerProps) {
   const { t } = useTranslation()
   const { runCode, output, error, isLoading, isPyodideReady, clearOutput } = useCodeRunner()
   const [isOutputExpanded, setIsOutputExpanded] = useState(true)
   const [showAlert, setShowAlert] = useState(false)
   const [alertMessage, setAlertMessage] = useState({ title: '', message: '' })
+  const prevOutputRef = useRef<string>('')
+  const prevErrorRef = useRef<string | null>(null)
+
+  // Detect successful execution (output changed and no error)
+  useEffect(() => {
+    if (output !== prevOutputRef.current && !error && output.trim() !== '' && !isLoading) {
+      // Execution was successful
+      if (onExecutionSuccess) {
+        onExecutionSuccess()
+      }
+    }
+    prevOutputRef.current = output
+    prevErrorRef.current = error
+  }, [output, error, isLoading, onExecutionSuccess])
 
   const handleRun = async () => {
     // Validar que haya un lenguaje seleccionado
