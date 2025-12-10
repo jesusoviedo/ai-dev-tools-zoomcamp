@@ -1,9 +1,11 @@
 """Integration tests for REST API endpoints."""
 
 import pytest
+from datetime import UTC, datetime, timedelta
 from fastapi.testclient import TestClient
 from main import app
-from app.database import init_db, drop_db, engine
+from app.database import init_db, drop_db, engine, SessionLocal
+from app.models import Session as SessionModel
 from sqlalchemy import text
 
 
@@ -284,4 +286,59 @@ class TestSaveCodeEndpoint:
         assert response.status_code == 200
         data = response.json()
         assert data["initial_code"] == ""
+    
+    def test_get_session_expired_returns_410(self, client):
+        """Test get_session returns 410 for expired session (line 109)."""
+        # Create an expired session directly in the database
+        db = SessionLocal()
+        try:
+            now = datetime.now(UTC)
+            expired_session = SessionModel(
+                session_id="expired-session-410",
+                room_id="room-expired-410",
+                language="python",
+                code="print('expired')",
+                created_at=now - timedelta(hours=10),
+                expires_at=now - timedelta(hours=2)  # Expired 2 hours ago
+            )
+            db.add(expired_session)
+            db.commit()
+            
+            # Try to get the expired session via API
+            response = client.get("/api/sessions/expired-session-410")
+            assert response.status_code == 410
+            data = response.json()
+            assert "detail" in data
+            assert "expirado" in data["detail"].lower() or "expired" in data["detail"].lower()
+        finally:
+            db.close()
+    
+    def test_save_code_expired_returns_410(self, client):
+        """Test save_code returns 410 for expired session (line 150)."""
+        # Create an expired session directly in the database
+        db = SessionLocal()
+        try:
+            now = datetime.now(UTC)
+            expired_session = SessionModel(
+                session_id="expired-save-410",
+                room_id="room-expired-save-410",
+                language="python",
+                code="print('expired')",
+                created_at=now - timedelta(hours=10),
+                expires_at=now - timedelta(hours=2)  # Expired 2 hours ago
+            )
+            db.add(expired_session)
+            db.commit()
+            
+            # Try to save code to the expired session via API
+            response = client.put(
+                "/api/sessions/expired-save-410/code",
+                json={"code": "print('new code')"}
+            )
+            assert response.status_code == 410
+            data = response.json()
+            assert "detail" in data
+            assert "expirado" in data["detail"].lower() or "expired" in data["detail"].lower()
+        finally:
+            db.close()
 
