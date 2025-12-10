@@ -103,14 +103,10 @@ export default function SessionManager({
               </>
             )}
           </button>
-          {!showInSidebar && (
-            <>
-              {!currentLanguage || currentLanguage === '' ? (
-                <p className="session-warning">{t('session.selectLanguageFirst')}</p>
-              ) : (
-                <p className="session-info-text">{t('session.languageWillBeLocked', { language: currentLanguage === 'javascript' ? t('language.javascript') : t('language.python') })}</p>
-              )}
-            </>
+          {!currentLanguage || currentLanguage === '' ? (
+            <p className="session-warning">{t('session.selectLanguageFirst')}</p>
+          ) : (
+            <p className="session-info-text">{t('session.languageWillBeLocked', { language: currentLanguage === 'javascript' ? t('language.javascript') : t('language.python') })}</p>
           )}
         </>
         ) : (

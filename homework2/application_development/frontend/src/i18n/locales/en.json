@@ -73,6 +73,7 @@
     "saving": "Saving...",
     "saved": "Code saved",
     "saveError": "Error saving",
+    "expiresAt": "Expires:",
     "shareDialog": {
       "title": "Share session",
       "description": "Share this link with others to collaborate in real-time",

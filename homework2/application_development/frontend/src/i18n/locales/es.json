@@ -73,6 +73,7 @@
     "saving": "Guardando...",
     "saved": "Código guardado",
     "saveError": "Error al guardar",
+    "expiresAt": "Expira:",
     "shareDialog": {
       "title": "Compartir sesión",
       "description": "Comparte este enlace con otros para colaborar en tiempo real",

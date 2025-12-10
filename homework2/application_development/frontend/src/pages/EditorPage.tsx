@@ -452,11 +452,6 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
                   </div>
                 </div>
               </CollapsiblePanel>
-              <CollapsiblePanel title={t('sidebar.settings.title')} icon={SettingsIcon} defaultCollapsed={true}>
-                <div className="settings-content">
-                  <p>{t('sidebar.settings.description')}</p>
-                </div>
-              </CollapsiblePanel>
               {!currentSession ? (
                 <CollapsiblePanel title={t('session.create')} icon={
                   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
