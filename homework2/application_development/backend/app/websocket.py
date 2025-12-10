@@ -6,12 +6,14 @@ from typing import Dict, Set
 from fastapi import WebSocket, WebSocketDisconnect, HTTPException, status
 from app.models import (
     CodeChangeMessage,
+    CursorChangeMessage,
     JoinMessage,
     LeaveMessage,
     UserJoinedMessage,
     UserLeftMessage,
     ErrorMessage
 )
+from datetime import datetime
 
 # Store active connections: room_id -> Set[WebSocket]
 active_connections: Dict[str, Set[WebSocket]] = {}
@@ -68,15 +70,77 @@ class ConnectionManager:
         # Notify other users
         return room_id, user_id, username
     
-    async def broadcast_code_change(self, room_id: str, code: str, cursor_position: int, user_id: str, exclude: WebSocket = None):
-        """Broadcast code changes to all users in a room."""
+    async def broadcast_code_change(
+        self, 
+        room_id: str, 
+        code: str = None, 
+        cursor_position: int = None, 
+        user_id: str = None,
+        from_pos: int = None,
+        to_pos: int = None,
+        insert: str = None,
+        delete_length: int = None,
+        timestamp: datetime = None,
+        exclude: WebSocket = None
+    ):
+        """Broadcast code changes to all users in a room. Supports both full code and diffs."""
         if room_id not in self.active_connections:
             return
         
-        message = CodeChangeMessage(
-            type="code_change",
-            code=code,
-            cursor_position=cursor_position,
+        # Validate diff if provided
+        has_diff = from_pos is not None and to_pos is not None and insert is not None
+        if has_diff:
+            # Validate diff parameters
+            if from_pos < 0 or to_pos < from_pos:
+                # Invalid diff, fall back to full code
+                has_diff = False
+        
+        # Create message with diff or full code
+        if has_diff and code is None:
+            # Diff only (preferred for efficiency)
+            message = CodeChangeMessage(
+                type="code_change",
+                from_pos=from_pos,
+                to_pos=to_pos,
+                insert=insert,
+                delete_length=delete_length,
+                user_id=user_id,
+                timestamp=timestamp or datetime.utcnow()
+            )
+        else:
+            # Full code (fallback or explicit)
+            message = CodeChangeMessage(
+                type="code_change",
+                code=code,
+                cursor_position=cursor_position or 0,
+                user_id=user_id,
+                timestamp=timestamp or datetime.utcnow()
+            )
+        
+        message_json = message.model_dump_json()
+        
+        disconnected = []
+        for connection in self.active_connections[room_id]:
+            if connection == exclude:
+                continue
+            try:
+                await connection.send_text(message_json)
+            except Exception:
+                disconnected.append(connection)
+        
+        # Clean up disconnected connections
+        for conn in disconnected:
+            self.disconnect(conn)
+    
+    async def broadcast_cursor_change(self, room_id: str, line: int, column: int, user_id: str, exclude: WebSocket = None):
+        """Broadcast cursor position changes to all users in a room."""
+        if room_id not in self.active_connections:
+            return
+        
+        message = CursorChangeMessage(
+            type="cursor_change",
+            line=line,
+            column=column,
             user_id=user_id
         )
         
@@ -185,10 +249,26 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                 if message_type == "code_change":
                     code_msg = CodeChangeMessage(**message_data)
                     # Broadcast to all other users in the room
+                    # Support both diff and full code messages
                     await manager.broadcast_code_change(
                         room_id=room_id,
                         code=code_msg.code,
-                        cursor_position=code_msg.cursor_position or 0,
+                        cursor_position=code_msg.cursor_position,
+                        user_id=user_id,
+                        from_pos=code_msg.from_pos,
+                        to_pos=code_msg.to_pos,
+                        insert=code_msg.insert,
+                        delete_length=code_msg.delete_length,
+                        timestamp=code_msg.timestamp,
+                        exclude=websocket
+                    )
+                elif message_type == "cursor_change":
+                    cursor_msg = CursorChangeMessage(**message_data)
+                    # Broadcast cursor position changes
+                    await manager.broadcast_cursor_change(
+                        room_id=room_id,
+                        line=cursor_msg.line,
+                        column=cursor_msg.column,
                         user_id=user_id,
                         exclude=websocket
                     )
