@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { sessionService, type SessionData } from '../services/sessionService'
-import ShareDialog from './ShareDialog'
 import './SessionManager.css'
 
 interface SessionManagerProps {
@@ -24,7 +23,6 @@ export default function SessionManager({
 }: SessionManagerProps) {
   const { t } = useTranslation()
   const [isCreating, setIsCreating] = useState(false)
-  const [showShareDialog, setShowShareDialog] = useState(false)
   const [currentSession, setCurrentSession] = useState<SessionData | null>(null)
 
   const handleCreateSession = async () => {
