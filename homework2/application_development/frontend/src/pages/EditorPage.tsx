@@ -672,6 +672,7 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
         show={showSaveNotification}
         onHide={() => setShowSaveNotification(false)}
       />
+    </div>
       
       {conflictNotification && (
         <div style={{
