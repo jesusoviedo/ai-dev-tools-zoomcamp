@@ -6,6 +6,7 @@
   background-color: #1e1e1e;
   border-radius: 8px;
   overflow: hidden;
+  margin-bottom: 20px;
 }
 
 .code-editor-header {
