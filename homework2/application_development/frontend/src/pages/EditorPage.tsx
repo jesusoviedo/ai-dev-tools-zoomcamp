@@ -430,6 +430,14 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
                         <span className="info-label">{t('session.activeUsers')}</span>
                         <span className="info-value">{activeUsers}</span>
                       </div>
+                      {currentSession.expires_at && (
+                        <div className="info-item">
+                          <span className="info-label">{t('session.expiresAt')}</span>
+                          <span className="info-value">
+                            {new Date(currentSession.expires_at).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
                     </>
                   )}
                   <div className="info-item">
