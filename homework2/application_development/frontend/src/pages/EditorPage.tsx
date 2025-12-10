@@ -330,8 +330,9 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
     }
   }
 
-  const handleLeaveSession = () => {
-    // Clear session state
+  const handleDisconnectSession = () => {
+    // Just disconnect from WebSocket and clear local state
+    // Don't delete the session, others can still use it
     setCurrentSession(null)
     setIsSessionCreator(false)
     setCode('')
@@ -343,6 +344,12 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
     window.history.pushState({}, '', '/')
     // Reload to reset state completely
     window.location.reload()
+  }
+
+  const handleLeaveSession = () => {
+    // This is the same as disconnect for now
+    // In the future, this could delete the session if user is creator
+    handleDisconnectSession()
   }
 
   // Initialize throttles when session is connected

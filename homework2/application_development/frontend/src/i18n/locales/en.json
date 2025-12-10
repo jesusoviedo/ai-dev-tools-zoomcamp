@@ -77,6 +77,10 @@
     "expiresAt": "Expires:",
     "leave": "Leave session",
     "leaveDescription": "Leave this shared session and return to individual editor.",
+    "disconnect": "Disconnect",
+    "disconnectDescription": "Disconnect from the session without deleting it. Other users can continue collaborating.",
+    "deleteSession": "Delete session",
+    "deleteSessionDescription": "Permanently delete this session. All users will be disconnected.",
     "shareDialog": {
       "title": "Share session",
       "description": "Share this link with others to collaborate in real-time",

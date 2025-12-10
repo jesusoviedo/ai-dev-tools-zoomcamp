@@ -21,6 +21,9 @@ active_connections: Dict[str, Set[WebSocket]] = {}
 # Store user info: websocket -> {user_id, username, room_id}
 user_info: Dict[WebSocket, dict] = {}
 
+# Store last activity time for each room: room_id -> datetime
+room_last_activity: Dict[str, datetime] = {}
+
 
 class ConnectionManager:
     """Manages WebSocket connections for rooms."""
@@ -52,7 +55,7 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         """Disconnect a user from a room."""
         if websocket not in self.user_info:
-            return
+            return None
         
         user_data = self.user_info[websocket]
         room_id = user_data["room_id"]
@@ -63,7 +66,12 @@ class ConnectionManager:
         if room_id in self.active_connections:
             self.active_connections[room_id].discard(websocket)
             if not self.active_connections[room_id]:
+                # Room is empty, update last activity time
+                room_last_activity[room_id] = datetime.now()
                 del self.active_connections[room_id]
+            else:
+                # Room still has users, update last activity time
+                room_last_activity[room_id] = datetime.now()
         
         del self.user_info[websocket]
         
