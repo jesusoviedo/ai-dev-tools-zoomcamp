@@ -17,7 +17,7 @@ interface CodeRunnerProps {
   hideControls?: boolean
 }
 
-export default function CodeRunner({ code, language, onExecutionSuccess, onSave, isSaving = false, canSave = false }: CodeRunnerProps) {
+export default function CodeRunner({ code, language, onExecutionSuccess, onSave, isSaving = false, canSave = false, hideControls = false }: CodeRunnerProps) {
   const { t } = useTranslation()
   const { runCode, output, error, isLoading, isPyodideReady, clearOutput } = useCodeRunner()
   const [isOutputExpanded, setIsOutputExpanded] = useState(true)
