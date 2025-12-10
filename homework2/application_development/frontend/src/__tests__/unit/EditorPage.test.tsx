@@ -12,6 +12,7 @@ vi.mock('../../services/sessionService', () => ({
     getSession: vi.fn(),
     getShareUrl: vi.fn((id: string) => `http://localhost:5173/session/${id}`),
     createSession: vi.fn(),
+    saveCode: vi.fn(),
   },
 }))
 

@@ -169,4 +169,113 @@ class TestGetSessionEndpoint:
         assert data["language"] == "java"
         assert data["initial_code"] == "public class Main {}"
         assert data["title"] == "Java Session"
+    
+    def test_get_session_includes_last_saved_at(self, client):
+        """Test that get session includes last_saved_at field."""
+        # Create a session first
+        create_response = client.post("/api/sessions")
+        session_id = create_response.json()["session_id"]
+        
+        # Get the session
+        response = client.get(f"/api/sessions/{session_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert "last_saved_at" in data
+        # Initially should be None
+        assert data["last_saved_at"] is None
+
+
+@pytest.mark.integration
+class TestSaveCodeEndpoint:
+    """Tests for PUT /api/sessions/{session_id}/code endpoint."""
+    
+    def test_save_code_success(self, client):
+        """Test saving code to an existing session."""
+        # Create a session first
+        create_response = client.post("/api/sessions", json={
+            "language": "python",
+            "initial_code": "print('hello')"
+        })
+        session_id = create_response.json()["session_id"]
+        
+        # Save new code
+        new_code = "print('updated')"
+        response = client.put(
+            f"/api/sessions/{session_id}/code",
+            json={"code": new_code}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["initial_code"] == new_code
+        assert data["last_saved_at"] is not None
+    
+    def test_save_code_not_found(self, client):
+        """Test saving code to a non-existent session."""
+        response = client.put(
+            "/api/sessions/non-existent-session-id/code",
+            json={"code": "print('test')"}
+        )
+        assert response.status_code == 404
+        data = response.json()
+        assert "detail" in data
+    
+    def test_save_code_updates_last_saved_at(self, client):
+        """Test that saving code updates last_saved_at timestamp."""
+        # Create a session first
+        create_response = client.post("/api/sessions")
+        session_id = create_response.json()["session_id"]
+        
+        # Get initial session (last_saved_at should be None)
+        get_response = client.get(f"/api/sessions/{session_id}")
+        assert get_response.json()["last_saved_at"] is None
+        
+        # Save code
+        save_response = client.put(
+            f"/api/sessions/{session_id}/code",
+            json={"code": "print('test')"}
+        )
+        assert save_response.status_code == 200
+        assert save_response.json()["last_saved_at"] is not None
+        
+        # Verify it's updated in get session
+        get_response2 = client.get(f"/api/sessions/{session_id}")
+        assert get_response2.json()["last_saved_at"] is not None
+    
+    def test_save_code_preserves_other_fields(self, client):
+        """Test that saving code preserves other session fields."""
+        # Create a session with custom data
+        create_response = client.post("/api/sessions", json={
+            "language": "javascript",
+            "initial_code": "console.log('hello')",
+            "title": "Test Session"
+        })
+        session_id = create_response.json()["session_id"]
+        
+        # Save new code
+        new_code = "console.log('updated')"
+        response = client.put(
+            f"/api/sessions/{session_id}/code",
+            json={"code": new_code}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["session_id"] == session_id
+        assert data["language"] == "javascript"
+        assert data["title"] == "Test Session"
+        assert data["initial_code"] == new_code
+    
+    def test_save_code_empty_code(self, client):
+        """Test saving empty code."""
+        # Create a session first
+        create_response = client.post("/api/sessions")
+        session_id = create_response.json()["session_id"]
+        
+        # Save empty code
+        response = client.put(
+            f"/api/sessions/{session_id}/code",
+            json={"code": ""}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["initial_code"] == ""
 
