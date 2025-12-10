@@ -1,9 +1,11 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import CodeMirror from '@uiw/react-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
 import { python } from '@codemirror/lang-python'
 import { oneDark } from '@codemirror/theme-one-dark'
+import { EditorView } from '@codemirror/view'
+import type { ViewUpdate } from '@codemirror/view'
 import './CodeEditor.css'
 
 export type SupportedLanguage = 'javascript' | 'python' | ''
@@ -11,6 +13,8 @@ export type SupportedLanguage = 'javascript' | 'python' | ''
 interface CodeEditorProps {
   value: string
   onChange: (value: string) => void
+  onUpdate?: (update: ViewUpdate) => void
+  onCursorChange?: (line: number, column: number) => void
   language?: SupportedLanguage
   onLanguageChange?: (language: SupportedLanguage) => void
   isLanguageLocked?: boolean
@@ -19,7 +23,9 @@ interface CodeEditorProps {
 
 export default function CodeEditor({ 
   value, 
-  onChange, 
+  onChange,
+  onUpdate,
+  onCursorChange,
   language: initialLanguage = '',
   onLanguageChange,
   isLanguageLocked = false,
@@ -34,15 +40,52 @@ export default function CodeEditor({
     setSelectedLanguage(initialLanguage || '')
   }, [initialLanguage])
 
+  const handleUpdateRef = useRef<(update: ViewUpdate) => void>()
+
+  // Create update handler that has access to latest callbacks
+  useEffect(() => {
+    handleUpdateRef.current = (update: ViewUpdate) => {
+      // Call onUpdate if provided
+      if (onUpdate) {
+        onUpdate(update)
+      }
+      
+      // Handle cursor position changes
+      if (onCursorChange && update.selectionSet) {
+        const mainSelection = update.state.selection.main
+        const line = update.state.doc.lineAt(mainSelection.head)
+        const column = mainSelection.head - line.from
+        onCursorChange(line.number, column)
+      }
+      
+      // Call onChange if content changed
+      if (update.docChanged) {
+        onChange(update.state.doc.toString())
+      }
+    }
+  }, [onUpdate, onCursorChange, onChange])
+
   const extensions = useMemo(() => {
+    const baseExtensions = []
+    
+    // Add language-specific extensions
     switch (selectedLanguage) {
       case 'javascript':
-        return [javascript({ jsx: false })]
+        baseExtensions.push(javascript({ jsx: false }))
+        break
       case 'python':
-        return [python()]
+        baseExtensions.push(python())
+        break
       default:
-        return []
+        break
     }
+    
+    // Add update listener extension
+    if (handleUpdateRef.current) {
+      baseExtensions.push(EditorView.updateListener.of(handleUpdateRef.current))
+    }
+    
+    return baseExtensions
   }, [selectedLanguage])
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -122,6 +165,7 @@ export default function CodeEditor({
       <CodeMirror
         value={value}
         onChange={onChange}
+        onUpdate={handleUpdate}
         theme={oneDark}
         extensions={extensions}
         basicSetup={{
