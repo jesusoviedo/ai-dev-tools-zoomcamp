@@ -38,6 +38,23 @@ vi.mock('../../components/SessionManager', () => ({
   }),
 }))
 
+// Mock CodeRunner to control execution success callback
+let mockOnExecutionSuccess: (() => void) | undefined
+vi.mock('../../components/CodeRunner', () => ({
+  default: vi.fn(({ onExecutionSuccess }) => {
+    mockOnExecutionSuccess = onExecutionSuccess
+    return <div data-testid="code-runner">Code Runner</div>
+  }),
+}))
+
+// Mock SaveNotification
+vi.mock('../../components/SaveNotification', () => ({
+  default: vi.fn(({ show, onHide }) => {
+    if (!show) return null
+    return <div data-testid="save-notification">Code saved</div>
+  }),
+}))
+
 describe('EditorPage', () => {
   const mockUseWebSocket = vi.mocked(useWebSocket)
   const mockSendMessage = vi.fn()
@@ -65,6 +82,7 @@ describe('EditorPage', () => {
     localStorage.clear()
     mockOnSessionCreated = undefined
     mockOnSessionLoaded = undefined
+    mockOnExecutionSuccess = undefined
     
     // Mock para evitar errores de CodeMirror en jsdom
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
@@ -927,6 +945,173 @@ describe('EditorPage', () => {
       // no se cumple, por lo que no se muestra la advertencia.
       // Necesitamos un caso donde isSessionCreator sea true para cubrir las líneas 97-100
     }
+  })
+
+  describe('Auto-save functionality', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+      vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('should save code when execution is successful', async () => {
+      vi.mocked(sessionService.getSession).mockResolvedValueOnce(mockSession)
+      vi.mocked(sessionService.saveCode).mockResolvedValueOnce()
+
+      renderEditorPage('test-session-id')
+
+      await waitFor(() => {
+        expect(sessionService.getSession).toHaveBeenCalled()
+      }, { timeout: 3000 })
+
+      // Simulate successful code execution
+      if (mockOnExecutionSuccess) {
+        mockOnExecutionSuccess()
+      }
+
+      await waitFor(() => {
+        expect(sessionService.saveCode).toHaveBeenCalledWith('test-session-id', expect.any(String))
+      }, { timeout: 2000 })
+    })
+
+    it('should show save notification after successful save', async () => {
+      vi.mocked(sessionService.getSession).mockResolvedValueOnce(mockSession)
+      vi.mocked(sessionService.saveCode).mockResolvedValueOnce()
+
+      renderEditorPage('test-session-id')
+
+      await waitFor(() => {
+        expect(sessionService.getSession).toHaveBeenCalled()
+      }, { timeout: 3000 })
+
+      // Simulate successful code execution
+      if (mockOnExecutionSuccess) {
+        mockOnExecutionSuccess()
+      }
+
+      await waitFor(() => {
+        expect(screen.getByTestId('save-notification')).toBeInTheDocument()
+      }, { timeout: 2000 })
+    })
+
+    it('should not save if no session exists', async () => {
+      renderEditorPage(null)
+
+      // Simulate successful code execution
+      if (mockOnExecutionSuccess) {
+        mockOnExecutionSuccess()
+      }
+
+      await waitFor(() => {
+        expect(sessionService.saveCode).not.toHaveBeenCalled()
+      }, { timeout: 1000 })
+    })
+
+    it('should auto-save after 2 minutes of inactivity', async () => {
+      vi.mocked(sessionService.getSession).mockResolvedValueOnce(mockSession)
+      vi.mocked(sessionService.saveCode).mockResolvedValueOnce()
+
+      renderEditorPage('test-session-id')
+
+      await waitFor(() => {
+        expect(sessionService.getSession).toHaveBeenCalled()
+      }, { timeout: 3000 })
+
+      // Simulate code change (this starts the timer)
+      const editor = screen.getByRole('textbox')
+      await userEvent.type(editor, 'print("test")')
+
+      // Fast-forward 2 minutes
+      vi.advanceTimersByTime(2 * 60 * 1000)
+
+      await waitFor(() => {
+        expect(sessionService.saveCode).toHaveBeenCalled()
+      }, { timeout: 2000 })
+    })
+
+    it('should reset auto-save timer on code change', async () => {
+      vi.mocked(sessionService.getSession).mockResolvedValueOnce(mockSession)
+      vi.mocked(sessionService.saveCode).mockResolvedValueOnce()
+
+      renderEditorPage('test-session-id')
+
+      await waitFor(() => {
+        expect(sessionService.getSession).toHaveBeenCalled()
+      }, { timeout: 3000 })
+
+      const editor = screen.getByRole('textbox')
+      
+      // First code change
+      await userEvent.type(editor, 'a')
+      vi.advanceTimersByTime(60 * 1000) // 1 minute
+
+      // Second code change (should reset timer)
+      await userEvent.type(editor, 'b')
+      vi.advanceTimersByTime(60 * 1000) // Another minute (total 2 minutes from second change)
+
+      // Should not have saved yet (only 1 minute since last change)
+      expect(sessionService.saveCode).not.toHaveBeenCalled()
+
+      // Fast-forward another minute
+      vi.advanceTimersByTime(60 * 1000)
+
+      await waitFor(() => {
+        expect(sessionService.saveCode).toHaveBeenCalled()
+      }, { timeout: 2000 })
+    })
+  })
+
+  describe('Manual save button', () => {
+    it('should show save button when session exists', async () => {
+      vi.mocked(sessionService.getSession).mockResolvedValueOnce(mockSession)
+
+      renderEditorPage('test-session-id')
+
+      await waitFor(() => {
+        expect(sessionService.getSession).toHaveBeenCalled()
+      }, { timeout: 3000 })
+
+      await waitFor(() => {
+        expect(screen.getByText(/guardar/i)).toBeInTheDocument()
+      }, { timeout: 3000 })
+    })
+
+    it('should call saveCode when save button is clicked', async () => {
+      vi.mocked(sessionService.getSession).mockResolvedValueOnce(mockSession)
+      vi.mocked(sessionService.saveCode).mockResolvedValueOnce()
+
+      renderEditorPage('test-session-id')
+
+      await waitFor(() => {
+        expect(sessionService.getSession).toHaveBeenCalled()
+      }, { timeout: 3000 })
+
+      const saveButton = await screen.findByText(/guardar/i)
+      await userEvent.click(saveButton)
+
+      await waitFor(() => {
+        expect(sessionService.saveCode).toHaveBeenCalled()
+      }, { timeout: 2000 })
+    })
+
+    it('should disable save button when code has not changed', async () => {
+      vi.mocked(sessionService.getSession).mockResolvedValueOnce(mockSession)
+
+      renderEditorPage('test-session-id')
+
+      await waitFor(() => {
+        expect(sessionService.getSession).toHaveBeenCalled()
+      }, { timeout: 3000 })
+
+      // After loading, code should match saved code, so button should be disabled
+      await waitFor(() => {
+        const saveButton = screen.getByText(/guardar/i)
+        expect(saveButton).toBeDisabled()
+      }, { timeout: 3000 })
+    })
   })
 })
 
