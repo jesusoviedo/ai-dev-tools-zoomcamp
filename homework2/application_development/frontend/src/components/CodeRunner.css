@@ -175,39 +175,45 @@
 
 /* Scrollbar styling mejorado */
 .output-success-content::-webkit-scrollbar,
-.code-runner-output::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+.code-runner-output::-webkit-scrollbar,
+.output-success-content-wrapper .output-success-content::-webkit-scrollbar {
+  width: 10px !important;
+  height: 10px !important;
 }
 
 .output-success-content::-webkit-scrollbar-track,
-.code-runner-output::-webkit-scrollbar-track {
-  background: #1e1e1e;
-  border-radius: 5px;
+.code-runner-output::-webkit-scrollbar-track,
+.output-success-content-wrapper .output-success-content::-webkit-scrollbar-track {
+  background: #1e1e1e !important;
+  border-radius: 5px !important;
 }
 
 .output-success-content::-webkit-scrollbar-thumb,
-.code-runner-output::-webkit-scrollbar-thumb {
-  background: #3e3e3e;
-  border-radius: 5px;
-  border: 2px solid #1e1e1e;
-  transition: background 0.2s ease;
+.code-runner-output::-webkit-scrollbar-thumb,
+.output-success-content-wrapper .output-success-content::-webkit-scrollbar-thumb {
+  background: #3e3e3e !important;
+  border-radius: 5px !important;
+  border: 2px solid #1e1e1e !important;
+  transition: background 0.2s ease !important;
 }
 
 .output-success-content::-webkit-scrollbar-thumb:hover,
-.code-runner-output::-webkit-scrollbar-thumb:hover {
-  background: #4e4e4e;
+.code-runner-output::-webkit-scrollbar-thumb:hover,
+.output-success-content-wrapper .output-success-content::-webkit-scrollbar-thumb:hover {
+  background: #4e4e4e !important;
 }
 
 .output-success-content::-webkit-scrollbar-corner,
-.code-runner-output::-webkit-scrollbar-corner {
-  background: #1e1e1e;
+.code-runner-output::-webkit-scrollbar-corner,
+.output-success-content-wrapper .output-success-content::-webkit-scrollbar-corner {
+  background: #1e1e1e !important;
 }
 
 /* Firefox scrollbar para output */
 .output-success-content,
-.code-runner-output {
-  scrollbar-width: thin;
-  scrollbar-color: #3e3e3e #1e1e1e;
+.code-runner-output,
+.output-success-content-wrapper .output-success-content {
+  scrollbar-width: thin !important;
+  scrollbar-color: #3e3e3e #1e1e1e !important;
 }
 
