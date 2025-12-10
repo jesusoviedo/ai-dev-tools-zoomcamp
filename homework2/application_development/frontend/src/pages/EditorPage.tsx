@@ -456,9 +456,14 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
             <h2>{t('sidebar.title')}</h2>
             <button 
               className="sidebar-close"
-                onClick={() => setIsSidebarCollapsed(true)}
-                title={t('common.hide')}
-              >
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setIsSidebarCollapsed(true)
+              }}
+              title={t('common.hide')}
+              aria-label={t('common.hide')}
+            >
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
                   <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
