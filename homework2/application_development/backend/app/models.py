@@ -40,6 +40,7 @@ class SessionResponse(BaseModel):
     initial_code: str = Field(description="Código inicial")
     title: Optional[str] = Field(default=None, description="Título de la sesión")
     created_at: datetime = Field(description="Fecha de creación")
+    expires_at: datetime = Field(description="Fecha de expiración de la sesión")
     active_users: int = Field(default=0, ge=0, description="Número de usuarios activos en la sesión")
     last_saved_at: Optional[datetime] = Field(default=None, description="Fecha del último guardado")
 

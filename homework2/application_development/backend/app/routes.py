@@ -81,6 +81,7 @@ async def create_session(
         initial_code=db_session.code,
         title=db_session.title,
         created_at=db_session.created_at,
+        expires_at=db_session.expires_at,
         active_users=db_session.active_users,
         last_saved_at=db_session.last_saved_at
     )
@@ -121,6 +122,7 @@ async def get_session(
         initial_code=db_session.code,
         title=db_session.title,
         created_at=db_session.created_at,
+        expires_at=db_session.expires_at,
         active_users=db_session.active_users,
         last_saved_at=db_session.last_saved_at
     )
@@ -169,6 +171,7 @@ async def save_code(
         initial_code=db_session.code,
         title=db_session.title,
         created_at=db_session.created_at,
+        expires_at=db_session.expires_at,
         active_users=db_session.active_users,
         last_saved_at=db_session.last_saved_at
     )
