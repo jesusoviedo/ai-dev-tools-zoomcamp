@@ -628,7 +628,6 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
               )}
             </div>
           </div>
-        </div>
         <div className={`editor-section ${isSidebarCollapsed ? 'expanded' : ''}`}>
           <div className="editor-header">
             <h2>{t('header.description')}</h2>
