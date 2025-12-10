@@ -1,6 +1,8 @@
 """Unit tests for routes."""
 
 import pytest
+import os
+import sys
 from datetime import UTC, datetime, timedelta
 from unittest.mock import patch, MagicMock, Mock
 from fastapi import HTTPException
@@ -23,29 +25,101 @@ from app.models import (
 class TestSessionDurationConfig:
     """Tests for SESSION_DURATION_HOURS configuration."""
     
-    @patch.dict('os.environ', {'SESSION_DURATION_HOURS': '3'})  # Invalid: < 5
     def test_session_duration_below_minimum(self):
-        """Test that SESSION_DURATION_HOURS defaults to 8 when below 5."""
+        """Test that SESSION_DURATION_HOURS defaults to 8 when below 5 (line 24)."""
+        import sys
         import importlib
-        import app.routes
-        importlib.reload(app.routes)
-        assert app.routes.SESSION_DURATION_HOURS == 8
+        
+        # Save original module
+        original_module = sys.modules.get('app.routes')
+        original_env = os.environ.get('SESSION_DURATION_HOURS')
+        
+        try:
+            # Set invalid value
+            os.environ['SESSION_DURATION_HOURS'] = '3'
+            
+            # Remove from cache to force reload
+            if 'app.routes' in sys.modules:
+                del sys.modules['app.routes']
+            
+            # Reload module - this should execute line 24
+            import app.routes
+            importlib.reload(app.routes)
+            
+            # Verify line 24 was executed (assignment inside if)
+            assert app.routes.SESSION_DURATION_HOURS == 8
+        finally:
+            # Restore
+            if original_env:
+                os.environ['SESSION_DURATION_HOURS'] = original_env
+            elif 'SESSION_DURATION_HOURS' in os.environ:
+                del os.environ['SESSION_DURATION_HOURS']
+            if original_module:
+                sys.modules['app.routes'] = original_module
     
-    @patch.dict('os.environ', {'SESSION_DURATION_HOURS': '15'})  # Invalid: > 12
     def test_session_duration_above_maximum(self):
-        """Test that SESSION_DURATION_HOURS defaults to 8 when above 12."""
+        """Test that SESSION_DURATION_HOURS defaults to 8 when above 12 (line 24)."""
+        import sys
         import importlib
-        import app.routes
-        importlib.reload(app.routes)
-        assert app.routes.SESSION_DURATION_HOURS == 8
+        
+        # Save original module
+        original_module = sys.modules.get('app.routes')
+        original_env = os.environ.get('SESSION_DURATION_HOURS')
+        
+        try:
+            # Set invalid value
+            os.environ['SESSION_DURATION_HOURS'] = '15'
+            
+            # Remove from cache to force reload
+            if 'app.routes' in sys.modules:
+                del sys.modules['app.routes']
+            
+            # Reload module - this should execute line 24
+            import app.routes
+            importlib.reload(app.routes)
+            
+            # Verify line 24 was executed (assignment inside if)
+            assert app.routes.SESSION_DURATION_HOURS == 8
+        finally:
+            # Restore
+            if original_env:
+                os.environ['SESSION_DURATION_HOURS'] = original_env
+            elif 'SESSION_DURATION_HOURS' in os.environ:
+                del os.environ['SESSION_DURATION_HOURS']
+            if original_module:
+                sys.modules['app.routes'] = original_module
     
-    @patch.dict('os.environ', {'SESSION_DURATION_HOURS': '10'})  # Valid: 5-12
     def test_session_duration_valid(self):
         """Test that SESSION_DURATION_HOURS accepts valid values."""
+        import sys
         import importlib
-        import app.routes
-        importlib.reload(app.routes)
-        assert app.routes.SESSION_DURATION_HOURS == 10
+        
+        # Save original module
+        original_module = sys.modules.get('app.routes')
+        original_env = os.environ.get('SESSION_DURATION_HOURS')
+        
+        try:
+            # Set valid value
+            os.environ['SESSION_DURATION_HOURS'] = '10'
+            
+            # Remove from cache to force reload
+            if 'app.routes' in sys.modules:
+                del sys.modules['app.routes']
+            
+            # Reload module
+            import app.routes
+            importlib.reload(app.routes)
+            
+            # Verify valid value is used (line 24 should NOT execute)
+            assert app.routes.SESSION_DURATION_HOURS == 10
+        finally:
+            # Restore
+            if original_env:
+                os.environ['SESSION_DURATION_HOURS'] = original_env
+            elif 'SESSION_DURATION_HOURS' in os.environ:
+                del os.environ['SESSION_DURATION_HOURS']
+            if original_module:
+                sys.modules['app.routes'] = original_module
 
 
 @pytest.mark.unit
