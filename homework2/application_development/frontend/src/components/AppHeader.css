@@ -3,6 +3,8 @@
   border-bottom: 1px solid #3e3e3e;
   padding: 32px 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 100;
 }
 
 .app-header-content {
