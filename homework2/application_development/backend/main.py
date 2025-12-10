@@ -1,6 +1,7 @@
 """Main FastAPI application entry point."""
 
 import asyncio
+from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,24 +11,42 @@ from app.websocket import websocket_endpoint
 from app.database import init_db
 from app.tasks import cleanup_expired_sessions, periodic_cleanup
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager for FastAPI application.
+    
+    Handles startup and shutdown events:
+    - Startup: Initialize database, cleanup expired sessions, start periodic cleanup task
+    - Shutdown: Cancel periodic cleanup task gracefully
+    """
+    # Startup
+    init_db()
+    # Clean up expired sessions on startup
+    cleanup_expired_sessions()
+    # Start periodic cleanup task (runs every hour)
+    cleanup_task = asyncio.create_task(periodic_cleanup(interval_hours=1))
+    
+    yield
+    
+    # Shutdown: Cancel the periodic cleanup task
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        pass
+
+
 # Create FastAPI app
 app = FastAPI(
     title="Coding Interview Platform API",
     description="API para plataforma de entrevistas de código online con colaboración en tiempo real",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
-
-# Initialize database on startup
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database tables and start background tasks on application startup."""
-    init_db()
-    # Clean up expired sessions on startup
-    cleanup_expired_sessions()
-    # Start periodic cleanup task (runs every hour)
-    asyncio.create_task(periodic_cleanup(interval_hours=1))
 
 # Configure CORS
 # En producción, como frontend y backend están en el mismo origen, podemos ser más permisivos
