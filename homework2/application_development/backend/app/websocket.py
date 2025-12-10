@@ -47,6 +47,9 @@ class ConnectionManager:
             "room_id": room_id
         }
         
+        # Update last activity time for the room
+        room_last_activity[room_id] = datetime.now()
+        
         # Notify other users in the room
         await self.broadcast_user_joined(room_id, user_id, username, websocket)
         
