@@ -478,7 +478,7 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
             </button>
           </div>
             <div className="sidebar-content">
-              <CollapsiblePanel title={t('sidebar.sessionInfo.title')} icon={InfoIcon}>
+              <CollapsiblePanel title={t('sidebar.sessionInfo.title')} icon={InfoIcon} defaultCollapsed={true}>
                 <div className="session-info">
                   <p>{t('sidebar.sessionInfo.description')}</p>
                   {currentSession && (
@@ -538,7 +538,7 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
                       <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                  }>
+                  } defaultCollapsed={false}>
                     <SessionManager
                       onSessionCreated={handleSessionCreated}
                       onSessionLoaded={handleSessionLoaded}
@@ -552,7 +552,7 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
                       <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                  }>
+                  } defaultCollapsed={true}>
                     <div style={{ padding: '12px' }}>
                       <p style={{ marginBottom: '12px', fontSize: '14px', color: '#cccccc' }}>
                         {t('session.disconnectDescription')}
