@@ -23,8 +23,8 @@ export default function AppHeader() {
             onChange={(e) => changeLanguage(e.target.value)}
             aria-label={t('header.languageSelector')}
           >
-            <option value="es">Español</option>
-            <option value="en">English</option>
+            <option value="es">ES</option>
+            <option value="en">EN</option>
           </select>
         </div>
       </div>
