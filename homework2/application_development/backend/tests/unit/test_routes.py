@@ -20,6 +20,35 @@ from app.models import (
 
 
 @pytest.mark.unit
+class TestSessionDurationConfig:
+    """Tests for SESSION_DURATION_HOURS configuration."""
+    
+    @patch.dict('os.environ', {'SESSION_DURATION_HOURS': '3'})  # Invalid: < 5
+    def test_session_duration_below_minimum(self):
+        """Test that SESSION_DURATION_HOURS defaults to 8 when below 5."""
+        import importlib
+        import app.routes
+        importlib.reload(app.routes)
+        assert app.routes.SESSION_DURATION_HOURS == 8
+    
+    @patch.dict('os.environ', {'SESSION_DURATION_HOURS': '15'})  # Invalid: > 12
+    def test_session_duration_above_maximum(self):
+        """Test that SESSION_DURATION_HOURS defaults to 8 when above 12."""
+        import importlib
+        import app.routes
+        importlib.reload(app.routes)
+        assert app.routes.SESSION_DURATION_HOURS == 8
+    
+    @patch.dict('os.environ', {'SESSION_DURATION_HOURS': '10'})  # Valid: 5-12
+    def test_session_duration_valid(self):
+        """Test that SESSION_DURATION_HOURS accepts valid values."""
+        import importlib
+        import app.routes
+        importlib.reload(app.routes)
+        assert app.routes.SESSION_DURATION_HOURS == 10
+
+
+@pytest.mark.unit
 class TestCreateSession:
     """Unit tests for create_session endpoint."""
     

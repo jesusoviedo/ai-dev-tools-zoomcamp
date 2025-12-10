@@ -104,6 +104,82 @@ class TestSessionPersistence:
         
         assert active_session.is_expired() is False
     
+    def test_session_is_expired_with_naive_datetime(self, db_session: Session):
+        """Test is_expired handles naive datetime (timezone-unaware)."""
+        # Create session with naive datetime (simulating old data)
+        from datetime import datetime as dt
+        naive_expires_at = dt.now() - timedelta(hours=2)  # Naive datetime
+        
+        expired_session = SessionModel(
+            session_id="naive-expired-session",
+            room_id="room-naive-expired",
+            language="python",
+            code="print('naive')",
+            created_at=datetime.now(UTC),
+            expires_at=naive_expires_at.replace(tzinfo=UTC)  # Make it aware for DB
+        )
+        db_session.add(expired_session)
+        db_session.commit()
+        
+        # Manually set naive datetime to test the branch
+        expired_session.expires_at = naive_expires_at
+        
+        # Should handle naive datetime correctly
+        assert expired_session.is_expired() is True
+    
+    def test_session_is_expired_with_timezone_aware_datetime(self, db_session: Session):
+        """Test is_expired handles timezone-aware datetime (else branch)."""
+        # Create session with timezone-aware datetime
+        expires_at_aware = datetime.now(UTC) - timedelta(hours=2)  # Expired, timezone-aware
+        
+        expired_session = SessionModel(
+            session_id="aware-expired-session",
+            room_id="room-aware-expired",
+            language="python",
+            code="print('aware')",
+            created_at=datetime.now(UTC),
+            expires_at=expires_at_aware
+        )
+        db_session.add(expired_session)
+        db_session.commit()
+        
+        # expires_at is already timezone-aware, so should use else branch (line 126)
+        assert expired_session.is_expired() is True
+        
+        # Test active session with timezone-aware datetime
+        active_expires_at = datetime.now(UTC) + timedelta(hours=8)
+        active_session = SessionModel(
+            session_id="aware-active-session",
+            room_id="room-aware-active",
+            language="python",
+            code="print('active')",
+            created_at=datetime.now(UTC),
+            expires_at=active_expires_at
+        )
+        db_session.add(active_session)
+        db_session.commit()
+        
+        # Should use else branch and return False
+        assert active_session.is_expired() is False
+    
+    def test_session_repr(self, db_session: Session):
+        """Test Session __repr__ method."""
+        session = SessionModel(
+            session_id="repr-test-session",
+            room_id="room-repr",
+            language="python",
+            code="print('repr')",
+            created_at=datetime.now(UTC),
+            expires_at=datetime.now(UTC) + timedelta(hours=8)
+        )
+        db_session.add(session)
+        db_session.commit()
+        
+        repr_str = repr(session)
+        assert "Session" in repr_str
+        assert "repr-test-session" in repr_str
+        assert "python" in repr_str
+    
     def test_query_expired_sessions(self, db_session: Session):
         """Test querying expired sessions."""
         now = datetime.now(UTC)
