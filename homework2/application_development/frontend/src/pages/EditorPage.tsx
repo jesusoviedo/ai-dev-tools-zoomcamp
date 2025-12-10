@@ -425,30 +425,36 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
 
   return (
     <div className="app-container">
-      {/* Botón hamburguesa flotante cuando sidebar está colapsado */}
-      {isSidebarCollapsed && (
-        <button 
-          className="hamburger-button"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            console.log('Toggle sidebar clicked')
-            setIsSidebarCollapsed(!isSidebarCollapsed)
-          }}
-          title={t('common.toggle')}
-          aria-label={t('common.toggle')}
+      {/* Botón hamburguesa flotante - siempre visible */}
+      <button 
+        className="hamburger-button"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          console.log('Toggle sidebar clicked')
+          setIsSidebarCollapsed(!isSidebarCollapsed)
+        }}
+        title={t('common.toggle')}
+        aria-label={t('common.toggle')}
+        style={{
+          left: isSidebarCollapsed ? '20px' : '340px',
+          transition: 'left 0.3s ease'
+        }}
+      >
+        <svg 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
         >
-          <svg 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-          >
+          {isSidebarCollapsed ? (
             <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      )}
+          ) : (
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          )}
+        </svg>
+      </button>
       <div className={`main-content ${!isSidebarCollapsed ? 'sidebar-expanded' : ''}`}>
         {/* Sidebar siempre renderizado, controlado por CSS */}
         <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
