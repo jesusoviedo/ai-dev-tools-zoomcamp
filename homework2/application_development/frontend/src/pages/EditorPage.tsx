@@ -551,6 +551,90 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
                       showInSidebar={true}
                     />
                   </CollapsiblePanel>
+                  <CollapsiblePanel title={t('session.disconnect')} icon={
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  }>
+                    <div style={{ padding: '12px' }}>
+                      <p style={{ marginBottom: '12px', fontSize: '14px', color: '#cccccc' }}>
+                        {t('session.disconnectDescription')}
+                      </p>
+                      <button
+                        onClick={handleDisconnectSession}
+                        style={{
+                          width: '100%',
+                          padding: '10px 16px',
+                          backgroundColor: '#ff9800',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontWeight: 500,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'background-color 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f57c00'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#ff9800'
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        {t('session.disconnect')}
+                      </button>
+                    </div>
+                  </CollapsiblePanel>
+                  {isSessionCreator && (
+                    <CollapsiblePanel title={t('session.deleteSession')} icon={
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    }>
+                      <div style={{ padding: '12px' }}>
+                        <p style={{ marginBottom: '12px', fontSize: '14px', color: '#cccccc' }}>
+                          {t('session.deleteSessionDescription')}
+                        </p>
+                        <button
+                          onClick={handleLeaveSession}
+                          style={{
+                            width: '100%',
+                            padding: '10px 16px',
+                            backgroundColor: '#d32f2f',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            transition: 'background-color 0.2s ease'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#b71c1c'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#d32f2f'
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          {t('session.deleteSession')}
+                        </button>
+                      </div>
+                    </CollapsiblePanel>
+                  )}
                 </>
               )}
             </div>
