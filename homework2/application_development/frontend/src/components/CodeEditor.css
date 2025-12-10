@@ -212,19 +212,25 @@
 
 /* Scrollbar personalizado para el editor */
 .code-mirror-editor::-webkit-scrollbar,
-.code-mirror-editor .cm-scroller::-webkit-scrollbar {
+.code-mirror-editor .cm-scroller::-webkit-scrollbar,
+.code-mirror-editor .cm-editor::-webkit-scrollbar,
+.code-mirror-editor .cm-editor .cm-scroller::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
 .code-mirror-editor::-webkit-scrollbar-track,
-.code-mirror-editor .cm-scroller::-webkit-scrollbar-track {
+.code-mirror-editor .cm-scroller::-webkit-scrollbar-track,
+.code-mirror-editor .cm-editor::-webkit-scrollbar-track,
+.code-mirror-editor .cm-editor .cm-scroller::-webkit-scrollbar-track {
   background: #1e1e1e;
   border-radius: 5px;
 }
 
 .code-mirror-editor::-webkit-scrollbar-thumb,
-.code-mirror-editor .cm-scroller::-webkit-scrollbar-thumb {
+.code-mirror-editor .cm-scroller::-webkit-scrollbar-thumb,
+.code-mirror-editor .cm-editor::-webkit-scrollbar-thumb,
+.code-mirror-editor .cm-editor .cm-scroller::-webkit-scrollbar-thumb {
   background: #3e3e3e;
   border-radius: 5px;
   border: 2px solid #1e1e1e;
@@ -232,18 +238,24 @@
 }
 
 .code-mirror-editor::-webkit-scrollbar-thumb:hover,
-.code-mirror-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
+.code-mirror-editor .cm-scroller::-webkit-scrollbar-thumb:hover,
+.code-mirror-editor .cm-editor::-webkit-scrollbar-thumb:hover,
+.code-mirror-editor .cm-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
   background: #4e4e4e;
 }
 
 .code-mirror-editor::-webkit-scrollbar-corner,
-.code-mirror-editor .cm-scroller::-webkit-scrollbar-corner {
+.code-mirror-editor .cm-scroller::-webkit-scrollbar-corner,
+.code-mirror-editor .cm-editor::-webkit-scrollbar-corner,
+.code-mirror-editor .cm-editor .cm-scroller::-webkit-scrollbar-corner {
   background: #1e1e1e;
 }
 
 /* Firefox scrollbar */
 .code-mirror-editor,
-.code-mirror-editor .cm-scroller {
+.code-mirror-editor .cm-scroller,
+.code-mirror-editor .cm-editor,
+.code-mirror-editor .cm-editor .cm-scroller {
   scrollbar-width: thin;
   scrollbar-color: #3e3e3e #1e1e1e;
 }
