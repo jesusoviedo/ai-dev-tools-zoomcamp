@@ -7,6 +7,7 @@ import CollapsiblePanel from '../components/CollapsiblePanel'
 import SessionManager from '../components/SessionManager'
 import AlertDialog from '../components/AlertDialog'
 import SaveNotification from '../components/SaveNotification'
+import ShareDialog from '../components/ShareDialog'
 import { sessionService, type SessionData } from '../services/sessionService'
 import { useWebSocket, type WebSocketMessage } from '../hooks/useWebSocket'
 import { throttle, debounce } from '../utils/throttle'
@@ -322,6 +323,11 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
     }
     // Update URL without reload
     window.history.pushState({}, '', `/session/${session.session_id}`)
+    // Show share dialog
+    const shareUrl = sessionService.getShareUrl(session.session_id)
+    setShareDialogUrl(shareUrl)
+    setShareDialogLanguage(session.language)
+    setShowShareDialog(true)
   }
 
   const handleSessionLoaded = (session: SessionData) => {
@@ -549,6 +555,14 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
                       currentLanguage={language}
                       isSessionCreator={isSessionCreator}
                       showInSidebar={true}
+                      onShareClick={() => {
+                        if (currentSession) {
+                          const shareUrl = sessionService.getShareUrl(currentSession.session_id)
+                          setShareDialogUrl(shareUrl)
+                          setShareDialogLanguage(currentSession.language)
+                          setShowShareDialog(true)
+                        }
+                      }}
                     />
                   </CollapsiblePanel>
                   <CollapsiblePanel title={t('session.disconnect')} icon={
@@ -709,6 +723,13 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
           {conflictNotification}
         </div>
       )}
+      
+      <ShareDialog
+        isOpen={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        shareUrl={shareDialogUrl}
+        language={shareDialogLanguage}
+      />
     </div>
   )
 }
