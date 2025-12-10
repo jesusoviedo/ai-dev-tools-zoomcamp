@@ -20,8 +20,7 @@ export default function CodeRunnerActions({
   onSave, 
   isSaving = false, 
   canSave = false,
-  onExecutionSuccess,
-  onRunClick
+  onExecutionSuccess
 }: CodeRunnerActionsProps) {
   const { t } = useTranslation()
   const { runCode, output, error, isLoading, isPyodideReady, clearOutput } = useCodeRunnerContext()
@@ -41,10 +40,6 @@ export default function CodeRunnerActions({
   }, [output, error, isLoading, onExecutionSuccess])
 
   const handleRun = async () => {
-    if (onRunClick) {
-      onRunClick()
-    }
-    
     // Validar que haya un lenguaje seleccionado
     if (!language || language === '') {
       return

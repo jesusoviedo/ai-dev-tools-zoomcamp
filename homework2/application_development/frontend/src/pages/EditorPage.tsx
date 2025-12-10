@@ -670,10 +670,6 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
                 isSaving={isSaving}
                 canSave={currentSession !== null && code !== lastSavedCodeRef.current && code.trim() !== ''}
                 onExecutionSuccess={handleExecutionSuccess}
-                onRunClick={async () => {
-                  // Trigger execution and then auto-save if successful
-                  // The CodeRunner component will handle the actual execution
-                }}
               />
             }
           />
