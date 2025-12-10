@@ -74,6 +74,8 @@
     "saved": "Code saved",
     "saveError": "Error saving",
     "expiresAt": "Expires:",
+    "leave": "Leave session",
+    "leaveDescription": "Leave this shared session and return to individual editor.",
     "shareDialog": {
       "title": "Share session",
       "description": "Share this link with others to collaborate in real-time",

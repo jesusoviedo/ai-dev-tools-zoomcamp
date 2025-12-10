@@ -74,6 +74,8 @@
     "saved": "Código guardado",
     "saveError": "Error al guardar",
     "expiresAt": "Expira:",
+    "leave": "Salir de sesión",
+    "leaveDescription": "Salir de esta sesión compartida y volver al editor individual.",
     "shareDialog": {
       "title": "Compartir sesión",
       "description": "Comparte este enlace con otros para colaborar en tiempo real",

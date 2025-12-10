@@ -154,7 +154,9 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
       sessionService.getSession(sessionId)
         .then(session => {
           setCurrentSession(session)
-          setCode(session.initial_code || '')
+          const initialCode = session.initial_code || ''
+          setCode(initialCode)
+          lastSavedCodeRef.current = initialCode
           setLanguage((session.language as SupportedLanguage) || '')
         })
         .catch(error => {
