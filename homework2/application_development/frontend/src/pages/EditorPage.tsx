@@ -425,53 +425,37 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
 
   return (
     <div className="app-container">
+      {/* Botón hamburguesa flotante cuando sidebar está colapsado */}
+      {isSidebarCollapsed && (
+        <button 
+          className="hamburger-button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            console.log('Toggle sidebar clicked')
+            setIsSidebarCollapsed(!isSidebarCollapsed)
+          }}
+          title={t('common.toggle')}
+          aria-label={t('common.toggle')}
+        >
+          <svg 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+          >
+            <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
       <div className="main-content">
-        <div className={`editor-section ${isSidebarCollapsed ? 'expanded' : ''}`}>
-          <div className="editor-header">
-            <h2>{t('header.description')}</h2>
+        {/* Sidebar siempre renderizado, controlado por CSS */}
+        <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+          <div className="sidebar-header">
+            <h2>{t('sidebar.title')}</h2>
             <button 
-              className="sidebar-toggle"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                console.log('Toggle sidebar clicked')
-                setIsSidebarCollapsed(!isSidebarCollapsed)
-              }}
-              title={t('common.toggle')}
-            >
-              <svg 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                xmlns="http://www.w3.org/2000/svg"
-                className={isSidebarCollapsed ? 'flipped' : ''}
-              >
-                <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          </div>
-          <CodeEditor 
-            value={code} 
-            onChange={handleCodeChange}
-            language={language}
-            onLanguageChange={handleLanguageChange}
-            isLanguageLocked={currentSession !== null && !isSessionCreator}
-            onLanguageChangeAttempt={handleLanguageChangeAttempt}
-          />
-          <CodeRunner 
-            code={code} 
-            language={language} 
-            onExecutionSuccess={handleExecutionSuccess}
-            onSave={currentSession ? saveCode : undefined}
-            isSaving={isSaving}
-            canSave={currentSession !== null && code !== lastSavedCodeRef.current && code !== ''}
-          />
-        </div>
-        {!isSidebarCollapsed && (
-          <div className="sidebar">
-            <div className="sidebar-header">
-              <h2>{t('sidebar.title')}</h2>
-              <button 
-                className="sidebar-close"
+              className="sidebar-close"
                 onClick={() => setIsSidebarCollapsed(true)}
                 title={t('common.hide')}
               >

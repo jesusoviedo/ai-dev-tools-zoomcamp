@@ -110,25 +110,69 @@
 }
 
 .sidebar {
-  width: 320px;
+  min-width: 320px;
+  flex: 0 0 auto;
   background: linear-gradient(180deg, #252526 0%, #2d2d30 100%);
-  border-left: 1px solid #3e3e3e;
+  border-right: 1px solid #3e3e3e;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideInRight 0.3s ease-out;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  transform: translateX(0);
+  opacity: 1;
 }
 
-@keyframes slideInRight {
+.sidebar.collapsed {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  min-width: 0;
+  border: none;
+  box-shadow: none;
+}
+
+@keyframes slideInLeft {
   from {
-    transform: translateX(100%);
+    transform: translateX(-100%);
     opacity: 0;
   }
   to {
     transform: translateX(0);
     opacity: 1;
   }
+}
+
+.hamburger-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  background: linear-gradient(135deg, #2d2d30 0%, #1e1e1e 100%);
+  border: 1px solid #3e3e3e;
+  color: #cccccc;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hamburger-button:hover {
+  background: linear-gradient(135deg, #37373d 0%, #2d2d30 100%);
+  border-color: #007acc;
+  color: #007acc;
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+  transform: translateY(-1px);
+}
+
+.hamburger-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-header {
