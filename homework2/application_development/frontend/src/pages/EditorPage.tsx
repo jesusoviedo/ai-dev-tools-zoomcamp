@@ -647,6 +647,17 @@ export default function EditorPage({ sessionId }: EditorPageProps) {
             onLanguageChange={handleLanguageChange}
             isLanguageLocked={currentSession !== null && !isSessionCreator}
             onLanguageChangeAttempt={handleLanguageChangeAttempt}
+            hideLanguageSelector={currentSession !== null}
+            headerActions={
+              <CodeRunnerActions
+                code={code}
+                language={language}
+                onSave={currentSession ? saveCode : undefined}
+                isSaving={isSaving}
+                canSave={currentSession !== null && code !== lastSavedCodeRef.current && code !== ''}
+                onExecutionSuccess={handleExecutionSuccess}
+              />
+            }
           />
           <CodeRunner 
             code={code} 
