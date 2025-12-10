@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import CodeMirror from '@uiw/react-codemirror'
 import { javascript } from '@codemirror/lang-javascript'
@@ -40,30 +40,31 @@ export default function CodeEditor({
     setSelectedLanguage(initialLanguage || '')
   }, [initialLanguage])
 
-  const handleUpdateRef = useRef<(update: ViewUpdate) => void>()
-
-  // Create update handler that has access to latest callbacks
-  useEffect(() => {
-    handleUpdateRef.current = (update: ViewUpdate) => {
-      // Call onUpdate if provided
-      if (onUpdate) {
-        onUpdate(update)
-      }
-      
-      // Handle cursor position changes
-      if (onCursorChange && update.selectionSet) {
+  // Handle update from CodeMirror
+  const handleUpdate = (update: ViewUpdate) => {
+    // Call onUpdate if provided
+    if (onUpdate) {
+      onUpdate(update)
+    }
+    
+    // Handle cursor position changes
+    if (onCursorChange && update.selectionSet) {
+      try {
         const mainSelection = update.state.selection.main
         const line = update.state.doc.lineAt(mainSelection.head)
         const column = mainSelection.head - line.from
         onCursorChange(line.number, column)
-      }
-      
-      // Call onChange if content changed
-      if (update.docChanged) {
-        onChange(update.state.doc.toString())
+      } catch (error) {
+        // Ignore errors in cursor calculation
+        console.debug('Error calculating cursor position:', error)
       }
     }
-  }, [onUpdate, onCursorChange, onChange])
+    
+    // Call onChange if content changed
+    if (update.docChanged) {
+      onChange(update.state.doc.toString())
+    }
+  }
 
   const extensions = useMemo(() => {
     const baseExtensions = []
@@ -78,11 +79,6 @@ export default function CodeEditor({
         break
       default:
         break
-    }
-    
-    // Add update listener extension
-    if (handleUpdateRef.current) {
-      baseExtensions.push(EditorView.updateListener.of(handleUpdateRef.current))
     }
     
     return baseExtensions
