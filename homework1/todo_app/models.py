@@ -48,6 +48,61 @@ class Todo(models.Model):
         self._soft_deleted = True
         self.save()
 
+    def check_circular_dependency(self, new_dependency):
+        """
+        Verifica si agregar new_dependency como dependencia crearía un ciclo circular.
+        Usa DFS (Depth First Search) para detectar ciclos en el grafo dirigido.
+        
+        Args:
+            new_dependency: La tarea (Todo) que se quiere agregar como dependencia
+        
+        Returns:
+            tuple: (has_cycle: bool, cycle_path: list) - Indica si hay ciclo y el camino del ciclo
+        """
+        def dfs_detect_cycle(start_task, target_task_id, path=None, visited=None):
+            """
+            DFS recursivo para detectar si hay un camino de start_task a target_task_id.
+            Si existe tal camino, agregar new_dependency crearía un ciclo.
+            """
+            if path is None:
+                path = []
+            if visited is None:
+                visited = set()
+            
+            # Si ya visitamos este nodo en el camino actual, no hay ciclo desde aquí
+            if start_task.pk in visited:
+                return False, []
+            
+            visited.add(start_task.pk)
+            path.append(start_task.pk)
+            
+            # Si llegamos al target, hay un ciclo (el path ya incluye al menos start_task)
+            if start_task.pk == target_task_id:
+                return True, path.copy()
+            
+            # Revisar todas las dependencias de start_task
+            for dep in start_task.dependencies.all():
+                has_cycle, cycle_path = dfs_detect_cycle(dep, target_task_id, path, visited)
+                if has_cycle:
+                    return True, cycle_path
+            
+            # Backtrack: remover del path y visited al salir de la recursión
+            path.pop()
+            visited.remove(start_task.pk)
+            return False, []
+        
+        # Verificar si new_dependency tiene un camino (directo o indirecto) hacia self
+        # Si lo tiene, agregar new_dependency como dependencia crearía un ciclo
+        has_cycle, cycle_path = dfs_detect_cycle(new_dependency, self.pk)
+        
+        if has_cycle:
+            # El cycle_path ya contiene self.pk al final cuando el DFS encuentra el target
+            # (el DFS agrega start_task.pk al path antes de verificar si es el target)
+            # No agregar self.pk nuevamente para evitar duplicados
+            return True, cycle_path
+        
+        return False, []
+
     def __str__(self):
         return self.title
 

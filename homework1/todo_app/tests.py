@@ -72,6 +72,51 @@ class TodoModelTest(TestCase):
         self.assertIn(task1, task2.dependencies.all())
         self.assertIn(task2, task1.blocking.all())
 
+    def test_check_circular_dependency_direct_cycle(self):
+        """Test detection of direct circular dependency."""
+        task1 = Todo.objects.create(title="Task 1", created_by=self.user)
+        task2 = Todo.objects.create(title="Task 2", created_by=self.user)
+        
+        # task1 depende de task2
+        task1.dependencies.add(task2)
+        
+        # Verificar que task2 no puede depender de task1 (ciclo directo)
+        has_cycle, cycle_path = task2.check_circular_dependency(task1)
+        self.assertTrue(has_cycle)
+        self.assertIn(task1.pk, cycle_path)
+        self.assertIn(task2.pk, cycle_path)
+
+    def test_check_circular_dependency_indirect_cycle(self):
+        """Test detection of indirect circular dependency."""
+        task1 = Todo.objects.create(title="Task 1", created_by=self.user)
+        task2 = Todo.objects.create(title="Task 2", created_by=self.user)
+        task3 = Todo.objects.create(title="Task 3", created_by=self.user)
+        
+        # Crear dependencias: task1 → task2 → task3
+        task1.dependencies.add(task2)
+        task2.dependencies.add(task3)
+        
+        # Verificar que task3 no puede depender de task1 (ciclo indirecto: 1→2→3→1)
+        has_cycle, cycle_path = task3.check_circular_dependency(task1)
+        self.assertTrue(has_cycle)
+        self.assertIn(task1.pk, cycle_path)
+        self.assertIn(task2.pk, cycle_path)
+        self.assertIn(task3.pk, cycle_path)
+
+    def test_check_circular_dependency_no_cycle(self):
+        """Test that valid dependencies don't create cycles."""
+        task1 = Todo.objects.create(title="Task 1", created_by=self.user)
+        task2 = Todo.objects.create(title="Task 2", created_by=self.user)
+        task3 = Todo.objects.create(title="Task 3", created_by=self.user)
+        
+        # task1 depende de task2
+        task1.dependencies.add(task2)
+        
+        # Verificar que task3 puede depender de task1 sin crear ciclo
+        has_cycle, cycle_path = task3.check_circular_dependency(task1)
+        self.assertFalse(has_cycle)
+        self.assertEqual(len(cycle_path), 0)
+
     def test_assigned_to(self):
         """Test task assignment."""
         user2 = User.objects.create_user(username='user2', password='password')
@@ -188,6 +233,64 @@ class TodoFormTest(TestCase):
         todo = Todo.objects.create(title="Task", created_by=self.user)
         form = TodoForm(instance=todo)
         self.assertNotIn(todo, form.fields['dependencies'].queryset)
+
+    def test_todo_form_prevent_direct_circular_dependency(self):
+        """Test that form prevents direct circular dependency (A depends on B, B depends on A)."""
+        task1 = Todo.objects.create(title="Task 1", created_by=self.user)
+        task2 = Todo.objects.create(title="Task 2", created_by=self.user)
+        
+        # task1 depende de task2
+        task1.dependencies.add(task2)
+        
+        # Intentar hacer que task2 dependa de task1 (crearía ciclo directo)
+        form = TodoForm(instance=task2, data={
+            'title': 'Task 2',
+            'status': 'ACTIVE',
+            'dependencies': [task1.pk]
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('dependencies', form.errors)
+        self.assertIn('circular', form.errors['dependencies'][0].lower())
+
+    def test_todo_form_prevent_indirect_circular_dependency(self):
+        """Test that form prevents indirect circular dependency (A → B → C → A)."""
+        task1 = Todo.objects.create(title="Task 1", created_by=self.user)
+        task2 = Todo.objects.create(title="Task 2", created_by=self.user)
+        task3 = Todo.objects.create(title="Task 3", created_by=self.user)
+        
+        # Crear dependencias: task1 → task2 → task3
+        task1.dependencies.add(task2)
+        task2.dependencies.add(task3)
+        
+        # Intentar hacer que task3 dependa de task1 (crearía ciclo indirecto: 1→2→3→1)
+        form = TodoForm(instance=task3, data={
+            'title': 'Task 3',
+            'status': 'ACTIVE',
+            'dependencies': [task1.pk]
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('dependencies', form.errors)
+        self.assertIn('circular', form.errors['dependencies'][0].lower())
+
+    def test_todo_form_allow_valid_dependencies(self):
+        """Test that form allows valid non-circular dependencies."""
+        task1 = Todo.objects.create(title="Task 1", created_by=self.user)
+        task2 = Todo.objects.create(title="Task 2", created_by=self.user)
+        task3 = Todo.objects.create(title="Task 3", created_by=self.user)
+        
+        # Crear dependencias válidas: task3 depende de task1 y task2
+        form = TodoForm(instance=task3, data={
+            'title': 'Task 3',
+            'status': 'ACTIVE',
+            'dependencies': [task1.pk, task2.pk]
+        })
+        self.assertTrue(form.is_valid(), f"Form errors: {form.errors}")
+        
+        # Verificar que se pueden guardar
+        form.save()
+        task3.refresh_from_db()
+        self.assertIn(task1, task3.dependencies.all())
+        self.assertIn(task2, task3.dependencies.all())
 
 
 class CommentFormTest(TestCase):
@@ -672,6 +775,47 @@ class SignalTest(TestCase):
         self.assertTrue(notifications.exists())
         notification = notifications.first()
         self.assertIn('dependency completed', notification.message.lower())
+
+    def test_automatic_unblock_on_all_dependencies_completed(self):
+        """Test that blocked tasks are automatically unblocked when all dependencies are completed."""
+        # Crear tareas: task1 y task2 bloquean a task3
+        todo1 = Todo.objects.create(title="Task 1", created_by=self.user, status='ACTIVE')
+        todo2 = Todo.objects.create(title="Task 2", created_by=self.user, status='ACTIVE')
+        todo3 = Todo.objects.create(title="Task 3", created_by=self.user, status='BLOCKED')
+        
+        # task3 depende de task1 y task2
+        todo3.dependencies.add(todo1, todo2)
+        
+        # Limpiar notificaciones previas
+        Notification.objects.all().delete()
+        
+        # Completar task1 - task3 debería seguir bloqueada
+        todo1.status = 'COMPLETED'
+        todo1.save()
+        todo3.refresh_from_db()
+        self.assertEqual(todo3.status, 'BLOCKED', "Task should remain blocked when only one dependency is completed")
+        
+        # Verificar que NO se envió notificación cuando solo una dependencia está completa
+        notifications_after_first = Notification.objects.filter(user=self.user)
+        self.assertEqual(notifications_after_first.count(), 0, "No notification should be sent when task is still blocked")
+        
+        # Completar task2 - task3 debería desbloquearse automáticamente
+        todo2.status = 'COMPLETED'
+        todo2.save()
+        todo3.refresh_from_db()
+        self.assertEqual(todo3.status, 'ACTIVE', "Task should be automatically unblocked when all dependencies are completed")
+        
+        # Verificar que se creó un registro en AuditLog para el cambio automático
+        audit_logs = AuditLog.objects.filter(object_id=str(todo3.pk), action='UPDATE')
+        self.assertTrue(audit_logs.exists())
+        latest_log = audit_logs.order_by('-timestamp').first()
+        self.assertIn('automatically unblocked', latest_log.details.lower())
+        
+        # Verificar que se envió notificación SOLO cuando la tarea se desbloquea
+        notifications_after_unblock = Notification.objects.filter(user=self.user)
+        self.assertEqual(notifications_after_unblock.count(), 1, "Notification should be sent only when task is unblocked")
+        notification = notifications_after_unblock.first()
+        self.assertIn('You can now proceed', notification.message)
 
 
 # ==================== INTEGRATION TESTS ====================

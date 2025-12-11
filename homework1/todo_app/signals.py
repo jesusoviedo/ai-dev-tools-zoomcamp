@@ -21,6 +21,10 @@ def log_todo_save(sender, instance, created, **kwargs):
     if user and not user.is_authenticated:
         user = None
     
+    # Evitar procesar cambios que vienen de la resolución automática de dependencias
+    # (excepto para el audit log que sí queremos registrar)
+    is_dependency_resolution = getattr(instance, '_dependency_resolution', False)
+    
     if getattr(instance, '_soft_deleted', False):
         action = 'DELETE'
         details = f"Soft deleted task: {instance.title}"
@@ -29,6 +33,8 @@ def log_todo_save(sender, instance, created, **kwargs):
         details = f"Task {action.lower()}d: {instance.title}"
         if not created:
             details += f". Status: {instance.status}"
+            if is_dependency_resolution:
+                details += " (automatically unblocked - all dependencies completed)"
         
     AuditLog.objects.create(
         user=user,
@@ -37,6 +43,10 @@ def log_todo_save(sender, instance, created, **kwargs):
         object_id=str(instance.pk),
         details=details
     )
+
+    # Si es una resolución automática de dependencias, solo registrar en audit log
+    if is_dependency_resolution:
+        return
 
     # Notification Logic
     if created and instance.assigned_to:
@@ -55,18 +65,34 @@ def log_todo_save(sender, instance, created, **kwargs):
                 link=reverse('todo-detail', args=[instance.pk])
             )
         
-        # Status change to COMPLETED
+        # Status change to COMPLETED - Resolución de Dependencias Reactiva
         old_status = getattr(instance, '_old_status', None)
         if instance.status == 'COMPLETED' and old_status != 'COMPLETED':
             blocked_tasks = instance.blocking.all()
             for task in blocked_tasks:
-                recipient = task.assigned_to or task.created_by
-                if recipient:
-                     Notification.objects.create(
-                        user=recipient,
-                        message=f"Dependency completed: {instance.title}. You can now proceed with {task.title}",
-                        link=reverse('todo-detail', args=[task.pk])
-                    )
+                # Verificar si todas las dependencias están completadas
+                all_dependencies_completed = all(
+                    dep.status == 'COMPLETED' 
+                    for dep in task.dependencies.all()
+                )
+                
+                # Si todas las dependencias están completadas y la tarea está bloqueada,
+                # cambiar su estado de BLOQUEADO a ACTIVE
+                if all_dependencies_completed and task.status == 'BLOCKED':
+                    # Marcar que este cambio viene de la resolución de dependencias
+                    # para evitar procesamiento adicional en el signal
+                    task._dependency_resolution = True
+                    task.status = 'ACTIVE'
+                    task.save()  # Esto disparará el signal pero con el flag para evitar procesamiento adicional
+                    
+                    # Notificación al usuario asignado o creador (solo cuando la tarea se desbloquea)
+                    recipient = task.assigned_to or task.created_by
+                    if recipient:
+                        Notification.objects.create(
+                            user=recipient,
+                            message=f"Dependency completed: {instance.title}. You can now proceed with {task.title}",
+                            link=reverse('todo-detail', args=[task.pk])
+                        )
 
 # Note: post_delete is for HARD deletes. Soft deletes are updates.
 @receiver(post_delete, sender=Todo)

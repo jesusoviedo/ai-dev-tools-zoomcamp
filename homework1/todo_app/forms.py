@@ -46,6 +46,34 @@ class TodoForm(forms.ModelForm):
         # Customize the label format for dependencies to show title and status
         self.fields['dependencies'].label_from_instance = lambda obj: f"{obj.title} ({obj.get_status_display()})"
 
+    def clean_dependencies(self):
+        """
+        Validar que las dependencias no creen ciclos circulares.
+        Usa el algoritmo de detección de ciclos del modelo Todo.
+        """
+        dependencies = self.cleaned_data.get('dependencies', [])
+        instance = self.instance
+        
+        # Si es una nueva tarea (sin pk), no hay problema de ciclos aún
+        # porque aún no tiene dependencias establecidas
+        if not instance.pk:
+            return dependencies
+        
+        # Verificar cada dependencia seleccionada para detectar ciclos
+        for dep in dependencies:
+            has_cycle, cycle_path = instance.check_circular_dependency(dep)
+            if has_cycle:
+                # Construir mensaje de error descriptivo con los nombres de las tareas
+                cycle_tasks = Todo.objects.filter(pk__in=cycle_path)
+                cycle_names = [task.title for task in cycle_tasks]
+                cycle_str = ' → '.join(cycle_names)
+                raise forms.ValidationError(
+                    _('Creating this dependency would create a circular reference. '
+                      'Cycle detected: %(cycle)s') % {'cycle': cycle_str}
+                )
+        
+        return dependencies
+
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
